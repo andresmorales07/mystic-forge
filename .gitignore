@@ -429,3 +429,8 @@ docs/
 
 # Serilog rolling file sink output
 logs/
+
+# Local secrets
+.env
+.env.*
+!.env.example
