@@ -1,0 +1,41 @@
+# Production compose skeleton. Not deployed to Proxmox until end of Phase 1.
+# Secrets are expected to come from env vars (e.g. a .env file alongside this compose,
+# or the deployment runner's env injection).
+
+services:
+  postgres:
+    image: pgvector/pgvector:pg16
+    container_name: mysticforge-postgres-prod
+    environment:
+      POSTGRES_DB: ${POSTGRES_DB}
+      POSTGRES_USER: ${POSTGRES_USER}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+    volumes:
+      - postgres-data:/var/lib/postgresql/data
+      - ./docker/postgres/init.sql:/docker-entrypoint-initdb.d/init.sql:ro
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U $${POSTGRES_USER}"]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+
+  api:
+    image: mysticforge/api:${IMAGE_TAG:-latest}
+    container_name: mysticforge-api
+    environment:
+      ASPNETCORE_ENVIRONMENT: Production
+      ASPNETCORE_URLS: http://+:8080
+      ConnectionStrings__Default: Host=postgres;Port=5432;Database=${POSTGRES_DB};Username=${POSTGRES_USER};Password=${POSTGRES_PASSWORD}
+      Scryfall__ContactEmail: ${SCRYFALL_CONTACT_EMAIL}
+      OpenRouter__ApiKey: ${OPENROUTER_API_KEY}
+    depends_on:
+      postgres:
+        condition: service_healthy
+    restart: unless-stopped
+    # Port intentionally NOT exposed until Phase 5 adds auth and a reverse proxy.
+    expose:
+      - "8080"
+
+volumes:
+  postgres-data:
