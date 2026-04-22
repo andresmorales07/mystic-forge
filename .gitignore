@@ -426,3 +426,6 @@ docs/
 
 # Claude Code execution plans — operational artifacts, not tracked
 .claude/plans/
+
+# Serilog rolling file sink output
+logs/
