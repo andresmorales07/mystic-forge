@@ -21,4 +21,6 @@ if (app.Environment.IsDevelopment())
     app.UseHangfireDashboard("/hangfire");
 }
 
+app.MapHealthChecks("/healthz");
+
 app.Run();

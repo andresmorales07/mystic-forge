@@ -34,6 +34,9 @@ public static class DependencyInjection
 
         services.AddHangfireServer();
 
+        services.AddHealthChecks()
+            .AddNpgSql(connectionString, name: "postgres");
+
         return services;
     }
 }
