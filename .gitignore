@@ -3,6 +3,10 @@
 ##
 ## Get latest from https://github.com/github/gitignore/blob/main/VisualStudio.gitignore
 
+# .NET build outputs
+**/bin/
+**/obj/
+
 # User-specific files
 *.rsuser
 *.suo
@@ -416,3 +420,9 @@ FodyWeavers.xsd
 *.msix
 *.msm
 *.msp
+
+# Planning & design docs live in Anytype, not the repo
+docs/
+
+# Claude Code execution plans — operational artifacts, not tracked
+.claude/plans/

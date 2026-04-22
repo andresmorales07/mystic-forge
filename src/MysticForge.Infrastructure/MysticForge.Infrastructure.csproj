@@ -1,0 +1,6 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <ItemGroup>
+    <ProjectReference Include="..\MysticForge.Application\MysticForge.Application.csproj" />
+    <ProjectReference Include="..\MysticForge.Domain\MysticForge.Domain.csproj" />
+  </ItemGroup>
+</Project>
