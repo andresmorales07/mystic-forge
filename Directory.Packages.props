@@ -20,6 +20,8 @@
     <!-- Hangfire -->
     <PackageVersion Include="Hangfire.AspNetCore" Version="1.8.14" />
     <PackageVersion Include="Hangfire.PostgreSql" Version="1.20.9" />
+    <!-- Pinned to patch CVE in transitive Newtonsoft.Json 11.0.1 pulled in by Hangfire.AspNetCore. -->
+    <PackageVersion Include="Newtonsoft.Json" Version="13.0.4" />
 
     <!-- Logging -->
     <PackageVersion Include="Serilog.AspNetCore" Version="8.0.3" />
