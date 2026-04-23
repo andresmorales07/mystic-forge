@@ -91,7 +91,7 @@ public sealed class OracleHasherTests
     public void HashMultiFace_TreatsNullFaceTextAsEmpty()
     {
         var withNull = new[] { new CardFace("A", null, "Creature", "{1}") };
-        var withEmpty = new[] { new CardFace("A", "", "Creature", "{1}") };
+        var withEmpty = new[] { new CardFace("A", "",   "Creature", "{1}") };
 
         OracleHasher.HashMultiFace(withNull).Should().Equal(OracleHasher.HashMultiFace(withEmpty));
     }

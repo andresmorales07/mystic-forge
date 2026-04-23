@@ -144,9 +144,9 @@ public sealed class ScryfallIngestJobTests
 
         // Two printings of Sol Ring (same oracle_id) + one printing of a DFC.
         // Result should be 2 unique cards; 3 printings.
-        var solRingJson = File.ReadAllText(Path.Combine(AppContext.BaseDirectory, "Fixtures", "single-face-card.json"));
+        var solRingJson  = File.ReadAllText(Path.Combine(AppContext.BaseDirectory, "Fixtures", "single-face-card.json"));
         var solRingJson2 = solRingJson.Replace("\"00000000-0000-0000-0000-000000000001\"", "\"00000000-0000-0000-0000-000000000011\"");
-        var dfcJson = File.ReadAllText(Path.Combine(AppContext.BaseDirectory, "Fixtures", "dfc-card.json"));
+        var dfcJson      = File.ReadAllText(Path.Combine(AppContext.BaseDirectory, "Fixtures", "dfc-card.json"));
 
         var parser = Substitute.For<IScryfallCardStreamParser>();
         parser.ReadCardJsonAsync(Arg.Any<Stream>(), Arg.Any<CancellationToken>())

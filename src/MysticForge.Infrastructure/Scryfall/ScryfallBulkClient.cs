@@ -35,7 +35,7 @@ public sealed class ScryfallBulkClient : IScryfallBulkClient
         [property: JsonPropertyName("data")] List<BulkDataEntryJson> Data);
 
     private sealed record BulkDataEntryJson(
-        [property: JsonPropertyName("type")] string Type,
+        [property: JsonPropertyName("type")]         string Type,
         [property: JsonPropertyName("download_uri")] string DownloadUri,
-        [property: JsonPropertyName("updated_at")] DateTimeOffset UpdatedAt);
+        [property: JsonPropertyName("updated_at")]   DateTimeOffset UpdatedAt);
 }

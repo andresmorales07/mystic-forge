@@ -96,11 +96,11 @@ public sealed class ScryfallIngestJob
     {
         var cardResult = await _cards.UpsertAsync(cards, ct);
         counts.CardsInserted += cardResult.Inserted;
-        counts.CardsUpdated += cardResult.Updated;
+        counts.CardsUpdated  += cardResult.Updated;
 
         var printingResult = await _printings.UpsertAsync(printings, ct);
         counts.PrintingsInserted += printingResult.Inserted;
-        counts.PrintingsUpdated += printingResult.Updated;
+        counts.PrintingsUpdated  += printingResult.Updated;
 
         var events = cardResult.Changes.Select(change => new CardOracleEvent
         {

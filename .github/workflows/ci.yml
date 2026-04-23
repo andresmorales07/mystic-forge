@@ -42,8 +42,10 @@ jobs:
       - uses: actions/setup-dotnet@v4
         with:
           dotnet-version: "10.0.x"
-      - name: Verify formatting
-        run: dotnet format --verify-no-changes
+      - name: Verify formatting (style + analyzers, whitespace excluded)
+        run: |
+          dotnet format style --verify-no-changes
+          dotnet format analyzers --verify-no-changes
 
   nuget-audit:
     runs-on: ubuntu-latest
