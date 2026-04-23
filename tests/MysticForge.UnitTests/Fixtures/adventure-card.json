@@ -1,0 +1,20 @@
+{
+  "id": "00000000-0000-0000-0000-000000000004",
+  "oracle_id": "00000000-0000-0000-0000-0000000000A4",
+  "name": "Brazen Borrower // Petty Theft",
+  "layout": "adventure",
+  "cmc": 3.0,
+  "colors": ["U"],
+  "color_identity": ["U"],
+  "keywords": ["Flash"],
+  "card_faces": [
+    { "name": "Brazen Borrower", "oracle_text": "Flash\nFlying", "type_line": "Creature — Faerie Rogue", "mana_cost": "{1}{U}" },
+    { "name": "Petty Theft",     "oracle_text": "Return target nonland permanent an opponent controls to its owner's hand.", "type_line": "Instant — Adventure", "mana_cost": "{1}{U}" }
+  ],
+  "set": "ELD",
+  "collector_number": "39",
+  "rarity": "mythic",
+  "prices": { "usd": "4.50" },
+  "scryfall_uri": "https://scryfall.com/card/eld/39",
+  "released_at": "2019-10-04"
+}
