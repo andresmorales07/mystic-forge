@@ -3,7 +3,9 @@ using Hangfire.PostgreSql;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
+using MysticForge.Application.Scryfall;
 using MysticForge.Infrastructure.Persistence;
+using MysticForge.Infrastructure.Scryfall;
 
 namespace MysticForge.Infrastructure;
 
@@ -36,6 +38,20 @@ public static class DependencyInjection
 
         services.AddHealthChecks()
             .AddNpgSql(connectionString, name: "postgres");
+
+        var scryfallBaseUrl = configuration["Scryfall:BulkDataEndpoint"]
+            ?? throw new InvalidOperationException("Scryfall:BulkDataEndpoint is not configured.");
+        var scryfallContactEmail = configuration["Scryfall:ContactEmail"] ?? "unset@example.com";
+
+        services.AddHttpClient<IScryfallBulkClient, ScryfallBulkClient>(http =>
+        {
+            // BulkDataEndpoint is "https://api.scryfall.com/bulk-data" — we want the base to be
+            // "https://api.scryfall.com/" so both "bulk-data" and absolute download URIs work.
+            var endpoint = new Uri(scryfallBaseUrl);
+            http.BaseAddress = new Uri(endpoint.GetLeftPart(UriPartial.Authority) + "/");
+            http.DefaultRequestHeaders.Add("User-Agent", $"MysticForge/0.1 (+{scryfallContactEmail})");
+            http.DefaultRequestHeaders.Add("Accept", "application/json");
+        });
 
         return services;
     }
