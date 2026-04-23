@@ -53,6 +53,12 @@ public static class DependencyInjection
             http.DefaultRequestHeaders.Add("Accept", "application/json");
         });
 
+        services.AddSingleton<IClock, Clock>();
+        services.AddScoped<ICardWriter, CardWriter>();
+        services.AddScoped<IPrintingWriter, PrintingWriter>();
+        services.AddScoped<IOracleEventEmitter, OracleEventEmitter>();
+        services.AddScoped<IIngestRunTracker, IngestRunTracker>();
+
         return services;
     }
 }
