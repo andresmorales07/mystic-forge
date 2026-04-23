@@ -2,7 +2,7 @@ using System.Globalization;
 using System.Text.Json;
 using MysticForge.Domain.Cards;
 
-namespace MysticForge.Infrastructure.Scryfall;
+namespace MysticForge.Application.Scryfall;
 
 public static class ScryfallCardMapper
 {

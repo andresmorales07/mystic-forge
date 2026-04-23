@@ -1,6 +1,6 @@
 using System.Text.Json.Serialization;
 
-namespace MysticForge.Infrastructure.Scryfall;
+namespace MysticForge.Application.Scryfall;
 
 internal sealed record ScryfallCardJson(
     [property: JsonPropertyName("id")]               Guid Id,

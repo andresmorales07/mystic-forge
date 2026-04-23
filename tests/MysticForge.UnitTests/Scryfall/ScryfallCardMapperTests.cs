@@ -1,6 +1,6 @@
 using FluentAssertions;
 using MysticForge.Domain.Cards;
-using MysticForge.Infrastructure.Scryfall;
+using MysticForge.Application.Scryfall;
 using Xunit;
 
 namespace MysticForge.UnitTests.Scryfall;

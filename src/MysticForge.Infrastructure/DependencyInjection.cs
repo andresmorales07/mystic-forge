@@ -54,6 +54,7 @@ public static class DependencyInjection
         });
 
         services.AddSingleton<IClock, Clock>();
+        services.AddSingleton<IScryfallCardStreamParser, ScryfallCardStreamParser>();
         services.AddScoped<ICardWriter, CardWriter>();
         services.AddScoped<IPrintingWriter, PrintingWriter>();
         services.AddScoped<IOracleEventEmitter, OracleEventEmitter>();
