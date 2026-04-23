@@ -18,9 +18,12 @@ public static class DependencyInjection
         var connectionString = configuration.GetConnectionString("Default")
             ?? throw new InvalidOperationException("ConnectionStrings:Default is not configured.");
 
-        services.AddDbContext<MysticForgeDbContext>(options => options
-            .UseNpgsql(connectionString, npg => npg.UseVector())
-            .UseSnakeCaseNamingConvention());
+        // optionsLifetime: Singleton lets the singleton IDbContextFactory (below) consume the same options.
+        services.AddDbContext<MysticForgeDbContext>(
+            options => options
+                .UseNpgsql(connectionString, npg => npg.UseVector())
+                .UseSnakeCaseNamingConvention(),
+            optionsLifetime: ServiceLifetime.Singleton);
 
         // Factory used by components that must operate on their own context (e.g. IngestRunTracker
         // needs to persist failure rows even when the scoped context is polluted by a writer error).
