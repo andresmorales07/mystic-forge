@@ -4,7 +4,7 @@ namespace MysticForge.Application.Scryfall;
 
 internal sealed record ScryfallCardJson(
     [property: JsonPropertyName("id")]               Guid Id,
-    [property: JsonPropertyName("oracle_id")]        Guid OracleId,
+    [property: JsonPropertyName("oracle_id")]        Guid? OracleId,
     [property: JsonPropertyName("name")]             string Name,
     [property: JsonPropertyName("layout")]           string Layout,
     [property: JsonPropertyName("oracle_text")]      string? OracleText,
@@ -25,6 +25,7 @@ internal sealed record ScryfallCardJson(
 
 internal sealed record ScryfallFaceJson(
     [property: JsonPropertyName("name")]         string Name,
+    [property: JsonPropertyName("oracle_id")]    Guid? OracleId,
     [property: JsonPropertyName("oracle_text")]  string? OracleText,
     [property: JsonPropertyName("type_line")]    string? TypeLine,
     [property: JsonPropertyName("mana_cost")]    string? ManaCost);

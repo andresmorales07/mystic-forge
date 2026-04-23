@@ -40,6 +40,14 @@ app.MapGet("/", () => "Mystic Forge API");
 if (app.Environment.IsDevelopment())
 {
     app.UseHangfireDashboard("/hangfire");
+
+    // Dev-only: fire the Scryfall ingest synchronously (from the caller's perspective; Hangfire
+    // still queues/executes it) without going through the dashboard's form-based trigger.
+    app.MapPost("/dev/trigger-ingest", (IRecurringJobManager jobs) =>
+    {
+        jobs.Trigger("scryfall.ingest.default-cards");
+        return Results.Accepted();
+    });
 }
 
 app.MapHealthChecks("/healthz");

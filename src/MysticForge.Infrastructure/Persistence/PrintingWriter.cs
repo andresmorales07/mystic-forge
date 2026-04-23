@@ -17,8 +17,13 @@ public sealed class PrintingWriter : IPrintingWriter
     {
         if (printings.Count == 0) return new PrintingUpsertResult(0, 0);
 
+        // Clear residue from prior batches in this scope — identity-map conflicts otherwise arise
+        // across FlushBatch calls within a single Hangfire job.
+        _db.ChangeTracker.Clear();
+
         var incomingIds = printings.Select(p => p.ScryfallId).ToArray();
         var existingIds = await _db.Printings
+            .AsNoTracking()
             .Where(p => incomingIds.Contains(p.ScryfallId))
             .Select(p => p.ScryfallId)
             .ToHashSetAsync(ct);

@@ -15,6 +15,9 @@ public sealed class CardConfiguration : IEntityTypeConfiguration<Card>
             "OR (oracle_text IS NULL AND type_line IS NULL AND card_faces IS NOT NULL)"));
 
         builder.HasKey(c => c.OracleId);
+        // OracleId is an externally-sourced identifier (from Scryfall). Never let EF's default
+        // Guid value generation silently substitute a new key when we pass Guid.Empty.
+        builder.Property(c => c.OracleId).ValueGeneratedNever();
 
         builder.Property(c => c.Name).IsRequired();
         builder.Property(c => c.Layout).IsRequired();

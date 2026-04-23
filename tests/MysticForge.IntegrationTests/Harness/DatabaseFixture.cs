@@ -20,9 +20,14 @@ public sealed class DatabaseFixture : IAsyncLifetime
 
     public async Task InitializeAsync()
     {
+        // EnableSensitiveDataLogging + EnableDetailedErrors surface parameter values and
+        // the offending entity state in exceptions — critical for diagnosing live-data ingest
+        // failures. Tests only; never for production.
         DbOptions = new DbContextOptionsBuilder<MysticForgeDbContext>()
-            .UseNpgsql(ConnectionString, npg => npg.UseVector())
+            .UseNpgsql(ConnectionString + ";Include Error Detail=true", npg => npg.UseVector())
             .UseSnakeCaseNamingConvention()
+            .EnableSensitiveDataLogging()
+            .EnableDetailedErrors()
             .Options;
 
         await using var db = new MysticForgeDbContext(DbOptions);

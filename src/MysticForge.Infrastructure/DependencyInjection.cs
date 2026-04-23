@@ -37,6 +37,12 @@ public static class DependencyInjection
             .SetDataCompatibilityLevel(CompatibilityLevel.Version_180)
             .UseSimpleAssemblyNameTypeSerializer()
             .UseRecommendedSerializerSettings()
+            // Globally enforce: only one execution of any given recurring job at a time (prevents
+            // retries from racing with an in-flight invocation and writing the same scryfall_id
+            // twice), and cap auto-retry at 2 attempts — failures here generally indicate a real
+            // issue worth investigating, not something to paper over with silent retries.
+            .UseFilter(new Hangfire.DisableConcurrentExecutionAttribute(timeoutInSeconds: 600))
+            .UseFilter(new Hangfire.AutomaticRetryAttribute { Attempts = 2, DelaysInSeconds = [60, 300] })
             .UsePostgreSqlStorage(
                 options => options.UseNpgsqlConnection(connectionString),
                 new PostgreSqlStorageOptions

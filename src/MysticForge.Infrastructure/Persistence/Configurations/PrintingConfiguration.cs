@@ -10,6 +10,9 @@ public sealed class PrintingConfiguration : IEntityTypeConfiguration<Printing>
     {
         builder.ToTable("printings");
         builder.HasKey(p => p.ScryfallId);
+        // ScryfallId is an externally-sourced identifier (from Scryfall). Never let EF's default
+        // Guid value generation silently substitute a new key when we pass Guid.Empty.
+        builder.Property(p => p.ScryfallId).ValueGeneratedNever();
 
         builder.Property(p => p.OracleId).IsRequired();
         builder.Property(p => p.SetCode).IsRequired();

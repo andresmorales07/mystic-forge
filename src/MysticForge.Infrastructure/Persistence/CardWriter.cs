@@ -17,8 +17,14 @@ public sealed class CardWriter : ICardWriter
     {
         if (cards.Count == 0) return new CardUpsertResult(0, 0, []);
 
+        // Clear residue from prior batches in this scope (Hangfire reuses one scoped context
+        // across every FlushBatch call). Without this, an identical-oracle-id card tracked
+        // from a previous batch collides with this batch's Update() call.
+        _db.ChangeTracker.Clear();
+
         var incomingIds = cards.Select(c => c.OracleId).ToArray();
         var existing = await _db.Cards
+            .AsNoTracking()
             .Where(c => incomingIds.Contains(c.OracleId))
             .Select(c => new { c.OracleId, c.OracleHash })
             .ToDictionaryAsync(x => x.OracleId, x => x.OracleHash, ct);

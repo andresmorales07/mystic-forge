@@ -45,6 +45,11 @@ public sealed class WireMockScryfall : IDisposable
     public void GivenBulkFile(string downloadPath, IEnumerable<string> rawCardJsons)
     {
         var arrayBody = "[" + string.Join(",", rawCardJsons) + "]";
+        GivenBulkFileRaw(downloadPath, arrayBody);
+    }
+
+    public void GivenBulkFileRaw(string downloadPath, string arrayBody)
+    {
         _server.Given(Request.Create().WithPath(downloadPath).UsingGet())
                .RespondWith(Response.Create().WithStatusCode(200).WithHeader("Content-Type", "application/json").WithBody(arrayBody));
     }

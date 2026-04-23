@@ -21,13 +21,21 @@ public static class ScryfallCardMapper
 
         var isMultiFace = faces is { Count: > 0 };
 
+        // Scryfall's reversible_card layout (and a handful of other edge cases) carry oracle_id
+        // only at the face level, not at the root. Fall back to the first face before giving up.
+        var oracleId = json.OracleId
+            ?? json.CardFaces?.FirstOrDefault(f => f.OracleId.HasValue)?.OracleId
+            ?? throw new InvalidOperationException(
+                $"Scryfall card '{json.Name}' ({json.Id}, layout {json.Layout}) has no oracle_id " +
+                "at the root or on any face.");
+
         var hash = isMultiFace
             ? OracleHasher.HashMultiFace(faces!)
             : OracleHasher.HashSingleFace(json.OracleText ?? string.Empty);
 
         var card = new Card
         {
-            OracleId = json.OracleId,
+            OracleId = oracleId,
             Name = json.Name,
             Layout = json.Layout,
             OracleText = isMultiFace ? null : json.OracleText,
@@ -47,7 +55,7 @@ public static class ScryfallCardMapper
         var printing = new Printing
         {
             ScryfallId = json.Id,
-            OracleId = json.OracleId,
+            OracleId = oracleId,
             SetCode = json.SetCode,
             CollectorNumber = json.CollectorNumber,
             Rarity = json.Rarity,
