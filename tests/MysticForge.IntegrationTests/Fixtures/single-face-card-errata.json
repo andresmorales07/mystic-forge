@@ -1,0 +1,19 @@
+{
+  "id": "00000000-0000-0000-0000-000000000001",
+  "oracle_id": "00000000-0000-0000-0000-0000000000A1",
+  "name": "Sol Ring",
+  "layout": "normal",
+  "oracle_text": "{T}: Add {C}. Add {C}.",
+  "type_line": "Artifact",
+  "mana_cost": "{1}",
+  "cmc": 1.0,
+  "colors": [],
+  "color_identity": [],
+  "keywords": [],
+  "set": "C21",
+  "collector_number": "263",
+  "rarity": "uncommon",
+  "prices": { "usd": "1.99" },
+  "scryfall_uri": "https://scryfall.com/card/c21/263/sol-ring",
+  "released_at": "2021-04-23"
+}

@@ -3,6 +3,10 @@
 ##
 ## Get latest from https://github.com/github/gitignore/blob/main/VisualStudio.gitignore
 
+# .NET build outputs
+**/bin/
+**/obj/
+
 # User-specific files
 *.rsuser
 *.suo
@@ -42,6 +46,9 @@ bld/
 
 # Visual Studio 2015/2017 cache/options directory
 .vs/
+
+# JetBrains Rider
+.idea/
 # Uncomment if you have tasks that create the project's static files in wwwroot
 #wwwroot/
 
@@ -416,3 +423,18 @@ FodyWeavers.xsd
 *.msix
 *.msm
 *.msp
+
+# Planning & design docs live in Anytype, not the repo
+docs/
+
+# Claude Code — local-only artifacts, not tracked
+.claude/plans/
+.claude/settings.local.json
+
+# Serilog rolling file sink output
+logs/
+
+# Local secrets
+.env
+.env.*
+!.env.example

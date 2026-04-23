@@ -1,0 +1,26 @@
+﻿<Project Sdk="Microsoft.NET.Sdk.Web">
+
+  <PropertyGroup>
+    <UserSecretsId>422493da-b311-4625-a6e8-a4af6258d7c2</UserSecretsId>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Microsoft.AspNetCore.OpenApi" />
+    <PackageReference Include="Serilog.AspNetCore" />
+    <PackageReference Include="Serilog.Sinks.File" />
+    <PackageReference Include="Serilog.Enrichers.Thread" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Microsoft.EntityFrameworkCore.Design">
+      <PrivateAssets>all</PrivateAssets>
+    </PackageReference>
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\MysticForge.Infrastructure\MysticForge.Infrastructure.csproj" />
+    <ProjectReference Include="..\MysticForge.Application\MysticForge.Application.csproj" />
+    <ProjectReference Include="..\MysticForge.Domain\MysticForge.Domain.csproj" />
+  </ItemGroup>
+
+</Project>
