@@ -28,4 +28,10 @@
     <ProjectReference Include="..\..\src\MysticForge.Api\MysticForge.Api.csproj" />
   </ItemGroup>
 
+  <ItemGroup>
+    <None Update="Fixtures\*.json">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+  </ItemGroup>
+
 </Project>
