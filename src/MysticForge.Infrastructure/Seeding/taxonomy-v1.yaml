@@ -561,6 +561,31 @@ synergy_hooks:
     description: Destroys opponents' lands
     examples: [Strip Mine, Armageddon]
 
+  # --- stax_matters ---
+  - name: stax_matters
+    parent: null
+    facet: event
+    description: Card applies ongoing disruption to opponents' resources or strategies (stax archetype umbrella)
+    examples: []
+
+  - name: tax_effect
+    parent: stax_matters
+    facet: event
+    description: Increases cost of opponents' spells or adds an ongoing tax on their actions
+    examples: [Thalia Guardian of Thraben, Sphere of Resistance, Thorn of Amethyst]
+
+  - name: upkeep_lock
+    parent: stax_matters
+    facet: event
+    description: Prevents untapping during the untap step or otherwise disrupts normal turn structure
+    examples: [Winter Orb, Static Orb, Stasis]
+
+  - name: strategy_hate
+    parent: stax_matters
+    facet: event
+    description: Specifically denies a particular opposing strategy (graveyard hate, tutor hate, mass-draw hate, combo hate)
+    examples: [Aven Mindcensor, Rule of Law, Spirit of the Labyrinth]
+
   # ======= Types facet =======
 
   # --- tribal_matters ---
@@ -710,6 +735,19 @@ synergy_hooks:
     facet: type
     description: Returns equipment from graveyard to hand or battlefield
     examples: [Auriok Salvagers, Argivian Archaeologist]
+
+  # --- snow_matters ---
+  - name: snow_matters
+    parent: null
+    facet: type
+    description: Card is a snow permanent or cares about snow permanents. Tagged by Snow supertype as an exception to the rules-scope rule, or by oracle text referencing snow.
+    examples: [Snow-Covered Forest, Scrying Sheets]
+
+  - name: snow_payoff
+    parent: snow_matters
+    facet: type
+    description: Card triggers on, scales with, or specifically benefits from snow permanents or snow mana
+    examples: [Scrying Sheets, Rimefeather Owl, Skred]
 
   # ======= Format facet =======
 

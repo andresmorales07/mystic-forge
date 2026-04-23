@@ -1,0 +1,414 @@
+# Mystic Forge — Taxonomy v1 Canonical Fixture Set
+# Phase 2a deliverable. See "Phase 2a Taxonomy v1 Design Spec — April 23, 2026"
+# in Anytype.
+#
+# Each card entry specifies the expected LLM output (leaf-level tags). The
+# ancestor-materialization writer (Phase 2b) expands the `synergy_hooks` leaves
+# into leaves + all ancestors before writing to card_tags.synergy_hooks. So
+# Doubling Season lists [counter_doubler, token_doubler] here; the DB row will
+# end up with [counter_doubler, plus_one_counter_matters, counter_matters,
+# token_doubler, token_matters].
+#
+# `mechanic_tags` lists Scryfall keywords + LLM-detected named constructs.
+# `tribal_interest` captures specific creature types a card cares about (empty
+# if the card is not type-parameterized or picks a type at ETB).
+#
+# Categories covered:
+#   - Format staples (8)
+#   - Classification-rule stressors (4)
+#   - Archetype representatives (~20)
+#   - Stax tests (3)
+#   - Multi-face stressors (3)
+#   - Snow basic (1)
+#   - Additional variety (~14)
+#
+# Dual purpose: (1) compilation anchor — when leaf vocabulary is compiled,
+# these cards MUST tag correctly against it. (2) LLM regression suite —
+# Phase 2b's classifier runs this fixture set as an automated test oracle.
+
+version: v1
+
+cards:
+
+  # ======= Format staples =======
+
+  - name: Sol Ring
+    notes: Classic fast ramp; the baseline ramp test.
+    structural_roles: [ramp]
+    synergy_hooks: []
+    mechanic_tags: []
+    tribal_interest: []
+
+  - name: Command Tower
+    notes: Fixing without ramp (no mana-count increase).
+    structural_roles: [mana_fix]
+    synergy_hooks: []
+    mechanic_tags: []
+    tribal_interest: []
+
+  - name: Rhystic Study
+    notes: Canonical card_draw.
+    structural_roles: [card_draw]
+    synergy_hooks: []
+    mechanic_tags: []
+    tribal_interest: []
+
+  - name: Cyclonic Rift
+    notes: Stressor — one card carrying both Tier 1 tags (removal at 2, wipe on overload).
+    structural_roles: [removal, wipe]
+    synergy_hooks: []
+    mechanic_tags: [overload]
+    tribal_interest: []
+
+  - name: Counterspell
+    notes: Canonical counterspell; confirms split from protection.
+    structural_roles: [counterspell]
+    synergy_hooks: []
+    mechanic_tags: []
+    tribal_interest: []
+
+  - name: Swords to Plowshares
+    notes: Canonical single-target removal.
+    structural_roles: [removal]
+    synergy_hooks: []
+    mechanic_tags: []
+    tribal_interest: []
+
+  - name: Smothering Tithe
+    notes: Treasure-producer without being itself a wincon.
+    structural_roles: []
+    synergy_hooks: [treasure_producer]
+    mechanic_tags: []
+    tribal_interest: []
+
+  - name: Mystic Remora
+    notes: Card_draw with cumulative upkeep as Tier 3 mechanic.
+    structural_roles: [card_draw]
+    synergy_hooks: []
+    mechanic_tags: [cumulative_upkeep]
+    tribal_interest: []
+
+  # ======= Classification-rule stressors =======
+
+  - name: Contagion Engine
+    notes: Proliferate+minus_one-counter producer. Tests that proliferate_matters is the right hook (not plus_one_counter_matters) because proliferate works on all counter types.
+    structural_roles: []
+    synergy_hooks: [minus_one_counter_producer, proliferate_matters]
+    mechanic_tags: [proliferate]
+    tribal_interest: []
+
+  - name: Heroic Intervention
+    notes: Stressor — protection despite "creatures you control" phrasing. Must NOT get tribal_matters.
+    structural_roles: [protection]
+    synergy_hooks: []
+    mechanic_tags: []
+    tribal_interest: []
+
+  - name: Doubling Season
+    notes: Stressor — single card spanning two Tier 2 trees simultaneously.
+    structural_roles: []
+    synergy_hooks: [counter_doubler, token_doubler]
+    mechanic_tags: []
+    tribal_interest: []
+
+  - name: Dockside Extortionist
+    notes: Stressor — treasure_producer, not a win_condition (unless specific combo context, which is Phase 3's concern).
+    structural_roles: []
+    synergy_hooks: [treasure_producer]
+    mechanic_tags: []
+    tribal_interest: []
+
+  # ======= Archetype representatives =======
+
+  - name: Young Pyromancer
+    notes: Token archetype + spellslinger overlap.
+    structural_roles: []
+    synergy_hooks: [creature_token_producer, instant_sorcery_matters]
+    mechanic_tags: []
+    tribal_interest: []
+
+  - name: Hardened Scales
+    notes: +1/+1 counter producer (actually a subtle doubler-adjacent, but categorized as producer in rules terms).
+    structural_roles: []
+    synergy_hooks: [plus_one_counter_producer]
+    mechanic_tags: []
+    tribal_interest: []
+
+  - name: Necroskitter
+    notes: -1/-1 counter payoff; steals creatures that die with -1/-1 counters.
+    structural_roles: []
+    synergy_hooks: [minus_one_counter_payoff]
+    mechanic_tags: [wither]
+    tribal_interest: []
+
+  - name: Blightsteel Colossus
+    notes: Classic poison wincon reanimator target.
+    structural_roles: [win_condition]
+    synergy_hooks: [poison_counter_producer, reanimator_target]
+    mechanic_tags: [trample, infect, indestructible]
+    tribal_interest: []
+
+  - name: Meren of Clan Nel Toth
+    notes: Aristocrat commander; experience-counter-matters + own_death_recursion.
+    structural_roles: [recursion]
+    synergy_hooks: [experience_counter_matters, own_death_recursion]
+    mechanic_tags: []
+    tribal_interest: []
+
+  - name: Reanimate
+    notes: Canonical reanimator spell. No Tier 1 role (it's a synergy piece, not composition).
+    structural_roles: []
+    synergy_hooks: [reanimator_effect]
+    mechanic_tags: []
+    tribal_interest: []
+
+  - name: Goblin Chieftain
+    notes: Tribal lord; carries specific tribal_interest.
+    structural_roles: []
+    synergy_hooks: [tribal_lord]
+    mechanic_tags: [haste]
+    tribal_interest: [goblin]
+
+  - name: Urza's Incubator
+    notes: Stressor — tribal card with NO specific tribal_interest (type chosen on ETB).
+    structural_roles: []
+    synergy_hooks: [tribal_cost_reduction]
+    mechanic_tags: []
+    tribal_interest: []
+
+  - name: Mulldrifter
+    notes: Canonical blink target (ETB draws cards).
+    structural_roles: [card_draw]
+    synergy_hooks: [etb_trigger]
+    mechanic_tags: [flying, evoke]
+    tribal_interest: []
+
+  - name: Panharmonicon
+    notes: Canonical etb_doubler.
+    structural_roles: []
+    synergy_hooks: [etb_doubler]
+    mechanic_tags: []
+    tribal_interest: []
+
+  - name: Blood Artist
+    notes: Aristocrat payoff; triggers on any creature death and shifts life.
+    structural_roles: []
+    synergy_hooks: [death_trigger_payoff, lifegain_source, lifeloss_source]
+    mechanic_tags: []
+    tribal_interest: []
+
+  - name: Smokestack
+    notes: Stax-adjacent; forces opponents to sacrifice. (Note: stax archetype broadly has thin Tier 2 coverage — flagged as gap for v2.)
+    structural_roles: []
+    synergy_hooks: [forced_sacrifice_effect]
+    mechanic_tags: []
+    tribal_interest: []
+
+  - name: Uril, the Miststalker
+    notes: Voltron commander; aura attach payoff + combat damage scaling.
+    structural_roles: [win_condition]
+    synergy_hooks: [aura_attach_payoff, combat_damage_payoff]
+    mechanic_tags: [shroud]
+    tribal_interest: []
+
+  - name: Lotus Cobra
+    notes: Canonical landfall ramp.
+    structural_roles: [ramp]
+    synergy_hooks: [landfall_payoff]
+    mechanic_tags: []
+    tribal_interest: []
+
+  - name: Baral, Chief of Compliance
+    notes: Spellslinger commander; cost reduction + instant/sorcery matters.
+    structural_roles: [counterspell]
+    synergy_hooks: [cost_reduction, instant_sorcery_matters]
+    mechanic_tags: []
+    tribal_interest: []
+
+  - name: Thassa's Oracle
+    notes: Alt wincon; library-size-based state win.
+    structural_roles: [win_condition]
+    synergy_hooks: []
+    mechanic_tags: []
+    tribal_interest: []
+
+  - name: Aetherflux Reservoir
+    notes: Storm-count wincon via lifegain ladder.
+    structural_roles: [win_condition]
+    synergy_hooks: [lifegain_payoff, storm_count_matters]
+    mechanic_tags: []
+    tribal_interest: []
+
+  - name: Urza, Lord High Artificer
+    notes: Artifact commander; artifact_cast_payoff + big mana from tapping artifacts.
+    structural_roles: []
+    synergy_hooks: [artifact_cast_payoff, big_mana_enabler]
+    mechanic_tags: []
+    tribal_interest: []
+
+  - name: Grave Pact
+    notes: Canonical forced-sacrifice stax piece.
+    structural_roles: []
+    synergy_hooks: [forced_sacrifice_effect]
+    mechanic_tags: []
+    tribal_interest: []
+
+  - name: Exquisite Blood
+    notes: Drain effect; half of a classic two-card combo.
+    structural_roles: []
+    synergy_hooks: [drain_effect, lifegain_source]
+    mechanic_tags: []
+    tribal_interest: []
+
+  - name: Atraxa, Praetors' Voice
+    notes: Proliferate-at-end-of-combat commander; all keywords on body.
+    structural_roles: []
+    synergy_hooks: [proliferate_matters]
+    mechanic_tags: [flying, vigilance, deathtouch, lifelink]
+    tribal_interest: []
+
+  - name: Aggravated Assault
+    notes: Canonical extra-combat engine.
+    structural_roles: []
+    synergy_hooks: [extra_combat_step]
+    mechanic_tags: []
+    tribal_interest: []
+
+  - name: Craterhoof Behemoth
+    notes: Token wincon; ETB buffs creatures with trample + power.
+    structural_roles: [win_condition]
+    synergy_hooks: [creature_token_payoff, combat_damage_payoff]
+    mechanic_tags: [trample, haste]
+    tribal_interest: []
+
+  - name: Wheel of Fortune
+    notes: Canonical wheel effect; resets hand.
+    structural_roles: [card_draw]
+    synergy_hooks: [wheel_effect]
+    mechanic_tags: []
+    tribal_interest: []
+
+  - name: Land Tax
+    notes: Basic-land tutor; Tier 1 tutor but narrowed scope.
+    structural_roles: [tutor]
+    synergy_hooks: []
+    mechanic_tags: []
+    tribal_interest: []
+
+  - name: Gaea's Cradle
+    notes: Big mana land; archetypal Elf/token mana engine.
+    structural_roles: []
+    synergy_hooks: [big_mana_enabler]
+    mechanic_tags: []
+    tribal_interest: []
+
+  - name: Felidar Guardian
+    notes: Canonical self-blink creature.
+    structural_roles: []
+    synergy_hooks: [self_blink]
+    mechanic_tags: [flash]
+    tribal_interest: []
+
+  - name: Solemn Simulacrum
+    notes: Dual trigger — ETB puts a land into play; death draws a card.
+    structural_roles: [ramp]
+    synergy_hooks: [etb_trigger, death_trigger_payoff]
+    mechanic_tags: []
+    tribal_interest: []
+
+  - name: Goblin Matron
+    notes: Tribal tutor specifically for Goblins.
+    structural_roles: [tutor]
+    synergy_hooks: [tribal_enabler]
+    mechanic_tags: []
+    tribal_interest: [goblin]
+
+  - name: Sensei's Divining Top
+    notes: Canonical card filtering artifact.
+    structural_roles: [card_filtering]
+    synergy_hooks: []
+    mechanic_tags: []
+    tribal_interest: []
+
+  - name: Elvish Archdruid
+    notes: Elf tribal lord + mana dork; carries specific tribal_interest.
+    structural_roles: [ramp]
+    synergy_hooks: [tribal_lord]
+    mechanic_tags: []
+    tribal_interest: [elf]
+
+  - name: Krenko, Mob Boss
+    notes: Goblin commander; exponential token production.
+    structural_roles: []
+    synergy_hooks: [creature_token_producer]
+    mechanic_tags: []
+    tribal_interest: [goblin]
+
+  - name: Phyrexian Altar
+    notes: Sacrifice outlet that also produces any-color mana (dual Tier 2 role).
+    structural_roles: []
+    synergy_hooks: [sacrifice_outlet]
+    mechanic_tags: []
+    tribal_interest: []
+
+  - name: Mana Crypt
+    notes: Format-staple ramp artifact.
+    structural_roles: [ramp]
+    synergy_hooks: []
+    mechanic_tags: []
+    tribal_interest: []
+
+  # ======= Multi-face stressors =======
+
+  - name: Bonecrusher Giant // Stomp
+    notes: Adventure stressor — body is a creature (Giant); back face is direct-damage removal. Tags pool from both faces.
+    structural_roles: [removal]
+    synergy_hooks: []
+    mechanic_tags: [adventure]
+    tribal_interest: [giant]
+
+  - name: Fire // Ice
+    notes: Split card stressor — two distinct Tier 1 roles from two halves.
+    structural_roles: [removal, card_draw]
+    synergy_hooks: []
+    mechanic_tags: []
+    tribal_interest: []
+
+  - name: Brazen Borrower // Petty Theft
+    notes: Adventure + bounce removal + faerie tribal interest.
+    structural_roles: [removal]
+    synergy_hooks: []
+    mechanic_tags: [flash, adventure]
+    tribal_interest: [faerie]
+
+  # ======= Stax tests =======
+
+  - name: Winter Orb
+    notes: Classic upkeep-lock stax piece. Tests the upkeep_lock hook.
+    structural_roles: []
+    synergy_hooks: [upkeep_lock]
+    mechanic_tags: []
+    tribal_interest: []
+
+  - name: Thalia, Guardian of Thraben
+    notes: Stax human; taxes noncreature spells. Tests the tax_effect hook.
+    structural_roles: []
+    synergy_hooks: [tax_effect]
+    mechanic_tags: [first_strike]
+    tribal_interest: []
+
+  - name: Rest in Peace
+    notes: Stressor — dual-tree card. Graveyard disruption in the graveyard tree + strategy hate in the stax tree. Classification rule "most specific applicable" applies within a tree, not across trees.
+    structural_roles: []
+    synergy_hooks: [graveyard_disruption, strategy_hate]
+    mechanic_tags: []
+    tribal_interest: []
+
+  # ======= Snow basic =======
+
+  - name: Snow-Covered Forest
+    notes: Tagged at snow_matters root via Snow supertype (exception to the rules-scope rule — supertype-based tagging for snow permanents).
+    structural_roles: []
+    synergy_hooks: [snow_matters]
+    mechanic_tags: []
+    tribal_interest: []
