@@ -51,26 +51,32 @@ public sealed class ScryfallIngestJob
         {
             await using var source = await _client.DownloadBulkAsync(metadata.DownloadUri, ct);
 
-            var cardBatch = new List<Card>(BatchSize);
+            // Scryfall's default_cards bulk file has one row per printing. Many printings can share
+            // a single oracle_id (e.g. Sol Ring has ~50 printings). We dedupe Cards by oracle_id
+            // within a batch — each printing maps to the same Card shape, so "last one wins" is
+            // safe and prevents EF from tracking the same primary key twice in a single SaveChanges.
+            var cardBatch = new Dictionary<Guid, Card>(BatchSize);
             var printingBatch = new List<Printing>(BatchSize);
 
             await foreach (var json in _parser.ReadCardJsonAsync(source, ct))
             {
                 var (card, printing) = ScryfallCardMapper.Map(json, _clock.UtcNow);
-                cardBatch.Add(card);
+                cardBatch[card.OracleId] = card;
                 printingBatch.Add(printing);
 
-                if (cardBatch.Count >= BatchSize)
+                // Printings fill faster than cards (many-to-one), so printing count is the correct
+                // high-water mark for flushing.
+                if (printingBatch.Count >= BatchSize)
                 {
-                    await FlushBatch(cardBatch, printingBatch, counts, ct);
+                    await FlushBatch(cardBatch.Values.ToList(), printingBatch, counts, ct);
                     cardBatch.Clear();
                     printingBatch.Clear();
                 }
             }
 
-            if (cardBatch.Count > 0)
+            if (printingBatch.Count > 0)
             {
-                await FlushBatch(cardBatch, printingBatch, counts, ct);
+                await FlushBatch(cardBatch.Values.ToList(), printingBatch, counts, ct);
             }
 
             await _tracker.CompleteAsync(runId, "success", counts.Snapshot(), ct);
@@ -83,8 +89,8 @@ public sealed class ScryfallIngestJob
     }
 
     private async Task FlushBatch(
-        List<Card> cards,
-        List<Printing> printings,
+        IReadOnlyList<Card> cards,
+        IReadOnlyList<Printing> printings,
         MutableCounts counts,
         CancellationToken ct)
     {

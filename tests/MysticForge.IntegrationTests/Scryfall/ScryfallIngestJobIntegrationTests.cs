@@ -101,6 +101,48 @@ public sealed class ScryfallIngestJobIntegrationTests : IAsyncLifetime
         card.OracleText.Should().Contain("Add {C}. Add {C}.");
     }
 
+    [Fact]
+    public async Task MultiplePrintingsOfSameOracleId_YieldOneCardAndManyPrintings()
+    {
+        using var mock = new WireMockScryfall();
+        mock.GivenBulkMetadata(new DateTimeOffset(2026, 4, 22, 9, 0, 0, TimeSpan.Zero));
+
+        var solRing = await LoadFixtureAsync("single-face-card.json");
+        var solRing2 = solRing.Replace("\"00000000-0000-0000-0000-000000000001\"", "\"00000000-0000-0000-0000-000000000011\"")
+                              .Replace("\"263\"", "\"555\"");
+        var solRing3 = solRing.Replace("\"00000000-0000-0000-0000-000000000001\"", "\"00000000-0000-0000-0000-000000000021\"")
+                              .Replace("\"263\"", "\"777\"");
+
+        mock.GivenBulkFile("/bulk.json", [solRing, solRing2, solRing3]);
+
+        var job = BuildJob(mock);
+        await job.RunAsync("default_cards", default);
+
+        await using var ctx = _db.NewContext();
+        (await ctx.Cards.CountAsync()).Should().Be(1);
+        (await ctx.Printings.CountAsync()).Should().Be(3);
+        (await ctx.CardOracleEvents.CountAsync(e => e.EventType == "created")).Should().Be(1);
+        (await ctx.ScryfallIngestRuns.CountAsync(r => r.Outcome == "success")).Should().Be(1);
+    }
+
+    [Fact]
+    public async Task DownloadFailure_RecordsFailedRun()
+    {
+        using var mock = new WireMockScryfall();
+        mock.GivenBulkMetadata(new DateTimeOffset(2026, 4, 22, 9, 0, 0, TimeSpan.Zero));
+        // Note: no GivenBulkFile — bulk.json will 404.
+
+        var job = BuildJob(mock);
+
+        await FluentActions.Invoking(() => job.RunAsync("default_cards", default))
+            .Should().ThrowAsync<HttpRequestException>();
+
+        await using var ctx = _db.NewContext();
+        var lastRun = await ctx.ScryfallIngestRuns.OrderByDescending(r => r.RunId).FirstAsync();
+        lastRun.Outcome.Should().Be("failed");
+        lastRun.ErrorMessage.Should().NotBeNullOrEmpty();
+    }
+
     private ScryfallIngestJob BuildJob(WireMockScryfall mock)
     {
         var httpClient = new HttpClient { BaseAddress = mock.BaseAddress };
@@ -114,9 +156,8 @@ public sealed class ScryfallIngestJobIntegrationTests : IAsyncLifetime
         var printings = new PrintingWriter(ctxForWriters);
         var emitter = new OracleEventEmitter(ctxForWriters);
 
-        var trackerCtx = _db.NewContext();
         var clock = new Clock();
-        var tracker = new IngestRunTracker(trackerCtx, clock);
+        var tracker = new IngestRunTracker(_db.ContextFactory, clock);
 
         return new ScryfallIngestJob(client, parser, cards, printings, emitter, tracker, clock);
     }

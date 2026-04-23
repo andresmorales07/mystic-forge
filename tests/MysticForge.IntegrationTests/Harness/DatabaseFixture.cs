@@ -32,4 +32,6 @@ public sealed class DatabaseFixture : IAsyncLifetime
     public Task DisposeAsync() => Task.CompletedTask;
 
     public MysticForgeDbContext NewContext() => new(DbOptions);
+
+    public IDbContextFactory<MysticForgeDbContext> ContextFactory => new TestDbContextFactory(DbOptions);
 }

@@ -22,6 +22,14 @@ public static class DependencyInjection
             .UseNpgsql(connectionString, npg => npg.UseVector())
             .UseSnakeCaseNamingConvention());
 
+        // Factory used by components that must operate on their own context (e.g. IngestRunTracker
+        // needs to persist failure rows even when the scoped context is polluted by a writer error).
+        services.AddDbContextFactory<MysticForgeDbContext>(
+            options => options
+                .UseNpgsql(connectionString, npg => npg.UseVector())
+                .UseSnakeCaseNamingConvention(),
+            lifetime: ServiceLifetime.Singleton);
+
         services.AddHangfire(cfg => cfg
             .SetDataCompatibilityLevel(CompatibilityLevel.Version_180)
             .UseSimpleAssemblyNameTypeSerializer()

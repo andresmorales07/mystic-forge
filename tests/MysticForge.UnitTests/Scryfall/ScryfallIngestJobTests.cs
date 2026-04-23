@@ -132,6 +132,65 @@ public sealed class ScryfallIngestJobTests
         await tracker.Received(1).FailAsync(99L, "network", Arg.Any<CancellationToken>());
     }
 
+    [Fact]
+    public async Task DedupesCardsByOracleId_WithinBatch()
+    {
+        var metadata = new ScryfallBulkMetadata("default_cards", new Uri("https://example/bulk.json"), FixedNow);
+
+        var client = Substitute.For<IScryfallBulkClient>();
+        client.GetBulkMetadataAsync("default_cards", Arg.Any<CancellationToken>()).Returns(metadata);
+        client.DownloadBulkAsync(metadata.DownloadUri, Arg.Any<CancellationToken>())
+              .Returns(new MemoryStream([1, 2, 3]));
+
+        // Two printings of Sol Ring (same oracle_id) + one printing of a DFC.
+        // Result should be 2 unique cards; 3 printings.
+        var solRingJson  = File.ReadAllText(Path.Combine(AppContext.BaseDirectory, "Fixtures", "single-face-card.json"));
+        var solRingJson2 = solRingJson.Replace("\"00000000-0000-0000-0000-000000000001\"", "\"00000000-0000-0000-0000-000000000011\"");
+        var dfcJson      = File.ReadAllText(Path.Combine(AppContext.BaseDirectory, "Fixtures", "dfc-card.json"));
+
+        var parser = Substitute.For<IScryfallCardStreamParser>();
+        parser.ReadCardJsonAsync(Arg.Any<Stream>(), Arg.Any<CancellationToken>())
+              .Returns(ToAsync([solRingJson, solRingJson2, dfcJson]));
+
+        var tracker = Substitute.For<IIngestRunTracker>();
+        tracker.GetLastSuccessfulUpdatedAtAsync("default_cards", Arg.Any<CancellationToken>()).Returns((DateTimeOffset?)null);
+        tracker.StartAsync("default_cards", FixedNow, Arg.Any<CancellationToken>()).Returns(77L);
+
+        var cards = Substitute.For<ICardWriter>();
+        cards.UpsertAsync(Arg.Any<IReadOnlyList<Card>>(), Arg.Any<CancellationToken>())
+             .Returns(call =>
+             {
+                 var list = call.Arg<IReadOnlyList<Card>>();
+                 var changes = list.Select(c => new OracleChange(c.OracleId, null, c.OracleHash, IsNew: true)).ToList();
+                 return new CardUpsertResult(Inserted: list.Count, Updated: 0, Changes: changes);
+             });
+
+        var printings = Substitute.For<IPrintingWriter>();
+        printings.UpsertAsync(Arg.Any<IReadOnlyList<Printing>>(), Arg.Any<CancellationToken>())
+                 .Returns(call => new PrintingUpsertResult(Inserted: call.Arg<IReadOnlyList<Printing>>().Count, Updated: 0));
+
+        var emitter = Substitute.For<IOracleEventEmitter>();
+        emitter.EmitAsync(Arg.Any<IReadOnlyList<CardOracleEvent>>(), Arg.Any<CancellationToken>())
+               .Returns(call => call.Arg<IReadOnlyList<CardOracleEvent>>().Count);
+
+        var clock = Substitute.For<IClock>();
+        clock.UtcNow.Returns(FixedNow);
+
+        var job = new ScryfallIngestJob(client, parser, cards, printings, emitter, tracker, clock);
+
+        await job.RunAsync("default_cards", default);
+
+        // 2 unique cards (Sol Ring dedup'd from 2 -> 1 + DFC = 2 total)
+        await cards.Received(1).UpsertAsync(
+            Arg.Is<IReadOnlyList<Card>>(x => x.Count == 2 && x.Select(c => c.OracleId).Distinct().Count() == 2),
+            Arg.Any<CancellationToken>());
+
+        // 3 printings (all unique by ScryfallId)
+        await printings.Received(1).UpsertAsync(
+            Arg.Is<IReadOnlyList<Printing>>(x => x.Count == 3 && x.Select(p => p.ScryfallId).Distinct().Count() == 3),
+            Arg.Any<CancellationToken>());
+    }
+
     private static async IAsyncEnumerable<string> ToAsync(IEnumerable<string> items)
     {
         foreach (var item in items) { yield return item; await Task.Yield(); }
