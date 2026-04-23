@@ -90,6 +90,16 @@ When exploring or editing this codebase, prefer the **Serena MCP server**'s sema
 
 Reading a whole file is a last resort, not the default.
 
+## Branch naming
+
+| Prefix | When to use |
+|---|---|
+| `feature/*` | New capabilities or user-facing behaviour |
+| `fix/*` | Bug fixes |
+| `chore/*` | CI changes, config tweaks, manual dependency bumps — maintenance that isn't a feature or bug |
+
+Slugs: lowercase, hyphen-separated, brief (e.g. `feature/scryfall-bulk-ingest`). Dependabot branches (`dependabot/nuget/…`) are exempt from this convention.
+
 ## Commit and deployment guardrails
 
 - Ask before committing. The user approves commits explicitly; don't pre-stage or commit on their behalf.

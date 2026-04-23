@@ -46,6 +46,9 @@ bld/
 
 # Visual Studio 2015/2017 cache/options directory
 .vs/
+
+# JetBrains Rider
+.idea/
 # Uncomment if you have tasks that create the project's static files in wwwroot
 #wwwroot/
 
@@ -424,8 +427,9 @@ FodyWeavers.xsd
 # Planning & design docs live in Anytype, not the repo
 docs/
 
-# Claude Code execution plans — operational artifacts, not tracked
+# Claude Code — local-only artifacts, not tracked
 .claude/plans/
+.claude/settings.local.json
 
 # Serilog rolling file sink output
 logs/

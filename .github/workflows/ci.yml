@@ -17,7 +17,7 @@ jobs:
       - name: Restore
         run: dotnet restore
       - name: Build
-        run: dotnet build --no-restore --configuration Release
+        run: dotnet build --no-restore --configuration Release /p:TreatWarningsAsErrors=true
       - name: Unit tests
         run: dotnet test tests/MysticForge.UnitTests --no-build --configuration Release --verbosity normal
 
@@ -31,7 +31,7 @@ jobs:
       - name: Restore
         run: dotnet restore
       - name: Build
-        run: dotnet build --no-restore --configuration Release
+        run: dotnet build --no-restore --configuration Release /p:TreatWarningsAsErrors=true
       - name: Integration tests (Testcontainers)
         run: dotnet test tests/MysticForge.IntegrationTests --no-build --configuration Release --verbosity normal
 
@@ -44,3 +44,20 @@ jobs:
           dotnet-version: "10.0.x"
       - name: Verify formatting
         run: dotnet format --verify-no-changes
+
+  nuget-audit:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: "10.0.x"
+      - name: Restore
+        run: dotnet restore
+      - name: Audit NuGet packages for known vulnerabilities
+        run: |
+          dotnet list package --vulnerable --include-transitive 2>&1 | tee /tmp/audit.txt
+          if grep -q "has the following vulnerable" /tmp/audit.txt; then
+            echo "::error::Vulnerable NuGet packages detected. Review the output above."
+            exit 1
+          fi
