@@ -1,0 +1,796 @@
+# Mystic Forge — Taxonomy v1
+# Phase 2a deliverable. See "Phase 2a Taxonomy v1 Design Spec — April 23, 2026"
+# in Anytype for the rationale behind this structure.
+#
+# This file is the source of truth for seeding the synergy_hooks table and
+# the Tier 1 role catalog. The mechanics_seed section is empty for v1;
+# the Tier 3 mechanics registry is populated at tag time by the LLM classifier.
+#
+# Schema consumed by this file is defined in Phase 2b (synergy_hooks table DDL).
+# Seeding command to load this file is also defined in Phase 2b.
+#
+# Every hook lists 0–2 example cards as documentation for future readers and
+# as classification calibration for the LLM. Examples are NOT seeded into the
+# database (the synergy_hooks table has no `examples` column).
+
+version: v1
+
+# -----------------------------------------------------------------------------
+# Tier 1 — Structural Roles (closed vocabulary, 11 entries)
+# Used for deck-composition diagnostics. LLM must emit only names from this
+# list for any card's structural_roles field.
+# -----------------------------------------------------------------------------
+roles:
+  - name: ramp
+    definition: Adds mana or puts lands into play
+  - name: mana_fix
+    definition: Provides color access; lets you cast multicolor spells
+  - name: card_draw
+    definition: Nets cards into hand
+  - name: card_filtering
+    definition: Reorders library or graveyard without netting
+  - name: removal
+    definition: Single-target battlefield interaction
+  - name: wipe
+    definition: Mass battlefield interaction
+  - name: counterspell
+    definition: Stack interaction
+  - name: protection
+    definition: Defends permanents or player from removal or damage
+  - name: tutor
+    definition: Searches library for a card
+  - name: recursion
+    definition: Returns cards from graveyard to hand, battlefield, or library
+  - name: win_condition
+    definition: Closes games when resolved
+
+# -----------------------------------------------------------------------------
+# Tier 2 — Synergy Hooks (hierarchical, closed vocabulary)
+# Adjacency list; parent_hook is null for top-level trees.
+# Materialized ancestors are written to card_tags.synergy_hooks at tag time.
+# -----------------------------------------------------------------------------
+synergy_hooks:
+
+  # ======= Resources facet =======
+
+  # --- counter_matters ---
+  - name: counter_matters
+    parent: null
+    facet: resource
+    description: Card cares about counters of any kind
+    examples: []
+
+  - name: proliferate_matters
+    parent: counter_matters
+    facet: resource
+    description: Gives or removes counters of any kind via proliferate
+    examples: [Contagion Engine, Inexorable Tide]
+
+  - name: plus_one_counter_matters
+    parent: counter_matters
+    facet: resource
+    description: Card cares specifically about +1/+1 counters
+    examples: []
+
+  - name: plus_one_counter_producer
+    parent: plus_one_counter_matters
+    facet: resource
+    description: Puts +1/+1 counters on creatures
+    examples: [Hardened Scales, Oran-Rief the Vastwood]
+
+  - name: counter_doubler
+    parent: plus_one_counter_matters
+    facet: resource
+    description: Doubles counters placed by other effects (not limited to +1/+1)
+    examples: [Doubling Season, Branching Evolution]
+
+  - name: counter_movement
+    parent: plus_one_counter_matters
+    facet: resource
+    description: Moves counters between permanents
+    examples: [Fertilid, Power Conduits]
+
+  - name: minus_one_counter_matters
+    parent: counter_matters
+    facet: resource
+    description: Card cares specifically about -1/-1 counters
+    examples: []
+
+  - name: minus_one_counter_producer
+    parent: minus_one_counter_matters
+    facet: resource
+    description: Puts -1/-1 counters on creatures
+    examples: [Black Sun's Zenith, Grim Poppet]
+
+  - name: minus_one_counter_payoff
+    parent: minus_one_counter_matters
+    facet: resource
+    description: Benefits from -1/-1 counters being on the board
+    examples: [Necroskitter, Throne of Geth]
+
+  - name: poison_counter_matters
+    parent: counter_matters
+    facet: resource
+    description: Card cares about poison counters (infect / toxic)
+    examples: []
+
+  - name: poison_counter_producer
+    parent: poison_counter_matters
+    facet: resource
+    description: Gives opponents poison counters via toxic damage or direct assignment
+    examples: [Blightsteel Colossus, Ichorclaw Myr]
+
+  - name: toxic_payoff
+    parent: poison_counter_matters
+    facet: resource
+    description: Scales with or triggers on poison counters in play
+    examples: [Vraska Betrayal's Sting, Evolution Sage]
+
+  - name: loyalty_counter_matters
+    parent: counter_matters
+    facet: resource
+    description: Interacts with planeswalker loyalty counters outside their normal activation
+    examples: [Oath of Teferi, Deepglow Skate]
+
+  - name: charge_counter_matters
+    parent: counter_matters
+    facet: resource
+    description: Produces or uses charge counters on artifacts
+    examples: [Crystalline Crawler, Coretapper]
+
+  - name: experience_counter_matters
+    parent: counter_matters
+    facet: resource
+    description: Gives or uses experience counters (Commander-specific mechanic)
+    examples: [Daretti Ingenious Iconoclast, Meren of Clan Nel Toth]
+
+  - name: energy_counter_matters
+    parent: counter_matters
+    facet: resource
+    description: Produces or spends energy counters
+    examples: [Aetherworks Marvel, Whirler Virtuoso]
+
+  # --- token_matters ---
+  - name: token_matters
+    parent: null
+    facet: resource
+    description: Card cares about tokens of any kind
+    examples: []
+
+  - name: token_doubler
+    parent: token_matters
+    facet: resource
+    description: Doubles tokens created by other effects (any token type)
+    examples: [Doubling Season, Parallel Lives]
+
+  - name: creature_token_producer
+    parent: token_matters
+    facet: resource
+    description: Creates creature tokens
+    examples: [Young Pyromancer, Avenger of Zendikar]
+
+  - name: creature_token_payoff
+    parent: token_matters
+    facet: resource
+    description: Rewards having or attacking with many creature tokens
+    examples: [Purphoros God of the Forge, Cathars' Crusade]
+
+  - name: treasure_producer
+    parent: token_matters
+    facet: resource
+    description: Creates Treasure tokens
+    examples: [Dockside Extortionist, Smothering Tithe]
+
+  - name: treasure_payoff
+    parent: token_matters
+    facet: resource
+    description: Rewards sacrificing or accumulating Treasure tokens
+    examples: [Revel in Riches, Xorn]
+
+  - name: food_matters
+    parent: token_matters
+    facet: resource
+    description: Produces or rewards Food tokens
+    examples: [Wicked Wolf, Gyome Master Chef]
+
+  - name: clue_matters
+    parent: token_matters
+    facet: resource
+    description: Produces or rewards Clue tokens
+    examples: [Lonis Cryptozoologist, Tireless Tracker]
+
+  - name: blood_matters
+    parent: token_matters
+    facet: resource
+    description: Produces or rewards Blood tokens
+    examples: [Bloodtithe Harvester, Edgar Charmed Groom]
+
+  - name: map_matters
+    parent: token_matters
+    facet: resource
+    description: Produces or rewards Map tokens
+    examples: [Cruel Somnophage, Trailblazer's Map]
+
+  - name: gold_matters
+    parent: token_matters
+    facet: resource
+    description: Produces Gold tokens or rewards sacrificing them
+    examples: [Brass's Bounty, Pitiless Plunderer]
+
+  # --- mana_matters ---
+  - name: mana_matters
+    parent: null
+    facet: resource
+    description: Card cares about mana as a resource beyond simple production
+    examples: []
+
+  - name: cost_reduction
+    parent: mana_matters
+    facet: resource
+    description: Reduces cost of casting spells (distinct from ramp which produces mana)
+    examples: [Urza's Incubator, Cloud Key]
+
+  - name: big_mana_enabler
+    parent: mana_matters
+    facet: resource
+    description: Produces large bursts of mana from a single source
+    examples: [Cabal Coffers, Gaea's Cradle]
+
+  - name: big_mana_payoff
+    parent: mana_matters
+    facet: resource
+    description: Scales with or requires large mana pools
+    examples: [Omnath Locus of Mana, Genesis Wave]
+
+  - name: storm_count_matters
+    parent: mana_matters
+    facet: resource
+    description: Triggers on or counts spells cast this turn
+    examples: [Grapeshot, Aetherflux Reservoir]
+
+  - name: ritual_effect
+    parent: mana_matters
+    facet: resource
+    description: Produces a burst of mana from a single spell
+    examples: [Dark Ritual, Seething Song]
+
+  # --- life_matters ---
+  - name: life_matters
+    parent: null
+    facet: resource
+    description: Card cares about life total changes
+    examples: []
+
+  - name: lifegain_source
+    parent: life_matters
+    facet: resource
+    description: Causes you or your creatures to gain life
+    examples: [Soul Warden, Rhox Faithmender]
+
+  - name: lifegain_payoff
+    parent: life_matters
+    facet: resource
+    description: Triggers or scales when you gain life
+    examples: [Ajani's Pridemate, Aetherflux Reservoir]
+
+  - name: lifeloss_source
+    parent: life_matters
+    facet: resource
+    description: Causes opponents to lose life
+    examples: [Marauding Blight-Priest, Tainted Remedy]
+
+  - name: drain_effect
+    parent: life_matters
+    facet: resource
+    description: Converts opponents' life loss into your life gain
+    examples: [Sanguine Bond, Exquisite Blood]
+
+  # ======= Zones facet =======
+
+  # --- graveyard_matters ---
+  - name: graveyard_matters
+    parent: null
+    facet: zone
+    description: Card cares about the graveyard zone
+    examples: []
+
+  - name: self_mill_effect
+    parent: graveyard_matters
+    facet: zone
+    description: Puts cards from your own library into your graveyard
+    examples: [Stitcher's Supplier, Altar of Dementia]
+
+  - name: reanimator_target
+    parent: graveyard_matters
+    facet: zone
+    description: Large threat specifically built to be reanimated cheaply
+    examples: [Blightsteel Colossus, Razaketh the Foulblooded]
+
+  - name: reanimator_effect
+    parent: graveyard_matters
+    facet: zone
+    description: Puts creatures from graveyard onto the battlefield
+    examples: [Reanimate, Animate Dead]
+
+  - name: cast_from_graveyard
+    parent: graveyard_matters
+    facet: zone
+    description: Card can cast or return itself from graveyard via static ability
+    examples: [Bloodghast, Gravecrawler]
+
+  - name: graveyard_count_matters
+    parent: graveyard_matters
+    facet: zone
+    description: Effect scales with number of cards in graveyards
+    examples: [Tarmogoyf, Knight of the Reliquary]
+
+  - name: graveyard_disruption
+    parent: graveyard_matters
+    facet: zone
+    description: Exiles or disables opponents' graveyards
+    examples: [Bojuka Bog, Leyline of the Void]
+
+  # --- exile_matters ---
+  - name: exile_matters
+    parent: null
+    facet: zone
+    description: Card cares about the exile zone
+    examples: []
+
+  - name: cast_from_exile_enabler
+    parent: exile_matters
+    facet: zone
+    description: Exiles cards and allows casting from exile
+    examples: [Etali Primal Storm, Wheel of Misfortune]
+
+  - name: impulse_draw
+    parent: exile_matters
+    facet: zone
+    description: Exiles a card you may play from exile on a later turn
+    examples: [Chandra Torch of Defiance, Outpost Siege]
+
+  - name: exile_as_resource
+    parent: exile_matters
+    facet: zone
+    description: Treats your own exile zone as a synergy field
+    examples: [Prosper Tome-Bound, Valakut Exploration]
+
+  # ======= Events facet =======
+
+  # --- death_matters ---
+  - name: death_matters
+    parent: null
+    facet: event
+    description: Card cares about creatures dying
+    examples: []
+
+  - name: sacrifice_outlet
+    parent: death_matters
+    facet: event
+    description: Sacrifices a creature for a benefit on demand
+    examples: [Viscera Seer, Phyrexian Altar]
+
+  - name: death_trigger_payoff
+    parent: death_matters
+    facet: event
+    description: Triggers whenever any creature dies
+    examples: [Zulaport Cutthroat, Blood Artist]
+
+  - name: forced_sacrifice_effect
+    parent: death_matters
+    facet: event
+    description: Forces opponents to sacrifice creatures
+    examples: [Grave Pact, Dictate of Erebos]
+
+  - name: own_death_recursion
+    parent: death_matters
+    facet: event
+    description: Returns your creatures from graveyard when they die
+    examples: [Meren of Clan Nel Toth, Karador Ghost Chieftain]
+
+  - name: sacrifice_payoff
+    parent: death_matters
+    facet: event
+    description: Rewards the act of sacrificing specifically (distinct from death)
+    examples: [Korvold Fae-Cursed King, Marchesa the Black Rose]
+
+  # --- etb_matters ---
+  - name: etb_matters
+    parent: null
+    facet: event
+    description: Card cares about enter-the-battlefield events
+    examples: []
+
+  - name: etb_trigger
+    parent: etb_matters
+    facet: event
+    description: Card has a meaningful ETB effect that blink decks want to reuse
+    examples: [Mulldrifter, Reclamation Sage]
+
+  - name: blink_enabler
+    parent: etb_matters
+    facet: event
+    description: Exiles and returns other creatures to re-trigger ETB
+    examples: [Ephemerate, Soulherder]
+
+  - name: etb_doubler
+    parent: etb_matters
+    facet: event
+    description: Doubles all ETB triggers you control
+    examples: [Panharmonicon, Conjurer's Closet]
+
+  - name: self_blink
+    parent: etb_matters
+    facet: event
+    description: Blinks itself for repeatable value
+    examples: [Felidar Guardian, Deadeye Navigator]
+
+  # --- combat_matters ---
+  - name: combat_matters
+    parent: null
+    facet: event
+    description: Card cares about combat events
+    examples: []
+
+  - name: attack_trigger_payoff
+    parent: combat_matters
+    facet: event
+    description: Triggers whenever your creatures attack
+    examples: [Edric Spymaster of Trest, Bident of Thassa]
+
+  - name: combat_damage_payoff
+    parent: combat_matters
+    facet: event
+    description: Triggers on combat damage dealt
+    examples: [Kalonian Hydra, Coastal Piracy]
+
+  - name: extra_combat_step
+    parent: combat_matters
+    facet: event
+    description: Grants an additional combat phase
+    examples: [Aggravated Assault, Hellkite Charger]
+
+  - name: damage_doubler
+    parent: combat_matters
+    facet: event
+    description: Doubles damage dealt by your sources
+    examples: [Furnace of Rath, Gratuitous Violence]
+
+  # --- spellcast_matters ---
+  - name: spellcast_matters
+    parent: null
+    facet: event
+    description: Card cares about casting spells
+    examples: []
+
+  - name: instant_sorcery_matters
+    parent: spellcast_matters
+    facet: event
+    description: Triggers on instant or sorcery casts
+    examples: [Young Pyromancer, Storm-Kiln Artist]
+
+  - name: creature_cast_matters
+    parent: spellcast_matters
+    facet: event
+    description: Triggers on creature spell casts
+    examples: [Soul of the Harvest, Beast Whisperer]
+
+  - name: first_spell_matters
+    parent: spellcast_matters
+    facet: event
+    description: Triggers on the first spell each turn or the first of a type
+    examples: [Kykar Wind's Fury, Chandra Acolyte of Flame]
+
+  - name: spell_copy
+    parent: spellcast_matters
+    facet: event
+    description: Copies instants or sorceries you cast
+    examples: [Twinflame, Dualcaster Mage]
+
+  # --- card_flow_matters ---
+  - name: card_flow_matters
+    parent: null
+    facet: event
+    description: Card cares about drawing, discarding, or milling cards
+    examples: []
+
+  - name: draw_trigger_payoff
+    parent: card_flow_matters
+    facet: event
+    description: Triggers or rewards drawing additional cards
+    examples: [Nekusar the Mindrazer, Consecrated Sphinx]
+
+  - name: wheel_effect
+    parent: card_flow_matters
+    facet: event
+    description: Each player discards hand then draws a new hand
+    examples: [Wheel of Fortune, Windfall]
+
+  - name: discard_outlet
+    parent: card_flow_matters
+    facet: event
+    description: Lets you discard cards voluntarily for value
+    examples: [Wild Mongrel, Bone Miser]
+
+  - name: discard_payoff
+    parent: card_flow_matters
+    facet: event
+    description: Rewards you for discarding cards (madness, etc.)
+    examples: [Hollow One, Anje Falkenrath]
+
+  - name: opponent_discard_payoff
+    parent: card_flow_matters
+    facet: event
+    description: Triggers when opponents discard cards
+    examples: [Waste Not, Liliana's Caress]
+
+  - name: mill_opponent_source
+    parent: card_flow_matters
+    facet: event
+    description: Puts cards from opponents' libraries into their graveyards
+    examples: [Bruvac the Grandiloquent, Fleet Swallower]
+
+  # --- land_drop_matters ---
+  - name: land_drop_matters
+    parent: null
+    facet: event
+    description: Card cares about lands entering the battlefield
+    examples: []
+
+  - name: landfall_payoff
+    parent: land_drop_matters
+    facet: event
+    description: Triggers when a land enters under your control
+    examples: [Lotus Cobra, Omnath Locus of Rage]
+
+  - name: extra_land_drop
+    parent: land_drop_matters
+    facet: event
+    description: Lets you play additional lands per turn
+    examples: [Azusa Lost but Seeking, Exploration]
+
+  - name: land_recursion
+    parent: land_drop_matters
+    facet: event
+    description: Returns lands from graveyard to hand or battlefield
+    examples: [Crucible of Worlds, Ramunap Excavator]
+
+  - name: land_destruction
+    parent: land_drop_matters
+    facet: event
+    description: Destroys opponents' lands
+    examples: [Strip Mine, Armageddon]
+
+  # --- stax_matters ---
+  - name: stax_matters
+    parent: null
+    facet: event
+    description: Card applies ongoing disruption to opponents' resources or strategies (stax archetype umbrella)
+    examples: []
+
+  - name: tax_effect
+    parent: stax_matters
+    facet: event
+    description: Increases cost of opponents' spells or adds an ongoing tax on their actions
+    examples: [Thalia Guardian of Thraben, Sphere of Resistance, Thorn of Amethyst]
+
+  - name: upkeep_lock
+    parent: stax_matters
+    facet: event
+    description: Prevents untapping during the untap step or otherwise disrupts normal turn structure
+    examples: [Winter Orb, Static Orb, Stasis]
+
+  - name: strategy_hate
+    parent: stax_matters
+    facet: event
+    description: Specifically denies a particular opposing strategy (graveyard hate, tutor hate, mass-draw hate, combo hate)
+    examples: [Aven Mindcensor, Rule of Law, Spirit of the Labyrinth]
+
+  # ======= Types facet =======
+
+  # --- tribal_matters ---
+  - name: tribal_matters
+    parent: null
+    facet: type
+    description: Card cares about shared creature types; specific types are captured in card_tags.tribal_interest
+    examples: []
+
+  - name: tribal_lord
+    parent: tribal_matters
+    facet: type
+    description: Grants a stat or keyword buff to creatures of a shared type
+    examples: [Goblin Chieftain, Lord of Atlantis]
+
+  - name: tribal_cost_reduction
+    parent: tribal_matters
+    facet: type
+    description: Reduces casting cost of creatures of a shared type
+    examples: [Urza's Incubator, Herald's Horn]
+
+  - name: tribal_anthem
+    parent: tribal_matters
+    facet: type
+    description: Global +X/+X or keyword buff to all creatures of a shared type
+    examples: [Crusade, Door of Destinies]
+
+  - name: tribal_enabler
+    parent: tribal_matters
+    facet: type
+    description: Tutors, searches, or generates creatures of a shared type
+    examples: [Goblin Matron, Patriarch's Bidding]
+
+  - name: changeling_or_all_types
+    parent: tribal_matters
+    facet: type
+    description: Counts as every creature type or has changeling
+    examples: [Mistform Ultimus, Maskwood Nexus]
+
+  # --- artifact_matters ---
+  - name: artifact_matters
+    parent: null
+    facet: type
+    description: Card cares about artifacts as a permanent type
+    examples: []
+
+  - name: artifact_producer
+    parent: artifact_matters
+    facet: type
+    description: Creates or puts non-equipment artifacts into play
+    examples: [Pia and Kiran Nalaar, Myr Retriever]
+
+  - name: artifact_cast_payoff
+    parent: artifact_matters
+    facet: type
+    description: Triggers on artifact spells cast
+    examples: [Urza Lord High Artificer, Jhoira Weatherlight Captain]
+
+  - name: artifact_count_matters
+    parent: artifact_matters
+    facet: type
+    description: Effect scales with or requires multiple artifacts
+    examples: [Master of Etherium, Tezzeret the Seeker]
+
+  - name: artifact_cost_reduction
+    parent: artifact_matters
+    facet: type
+    description: Reduces casting cost of artifact spells
+    examples: [Foundry Inspector, Cloud Key]
+
+  - name: artifact_recursion
+    parent: artifact_matters
+    facet: type
+    description: Returns artifacts from graveyard to battlefield or hand
+    examples: [Goblin Welder, Daretti Scrap Savant]
+
+  # --- enchantment_matters ---
+  - name: enchantment_matters
+    parent: null
+    facet: type
+    description: Card cares about enchantments (including auras and sagas)
+    examples: []
+
+  - name: enchantment_cast_payoff
+    parent: enchantment_matters
+    facet: type
+    description: Triggers on enchantment spells cast or ETB
+    examples: [Argothian Enchantress, Sythis Harvest's Hand]
+
+  - name: constellation
+    parent: enchantment_matters
+    facet: type
+    description: Specifically triggers on any enchantment entering the battlefield (Theros mechanic)
+    examples: [Doomwake Giant, Eidolon of Blossoms]
+
+  - name: enchantment_tutor
+    parent: enchantment_matters
+    facet: type
+    description: Searches library for enchantments
+    examples: [Three Dreams, Zur the Enchanter]
+
+  - name: enchantment_count_matters
+    parent: enchantment_matters
+    facet: type
+    description: Scales with number of enchantments you control
+    examples: [Sphere of Safety, Sram Senior Edificer]
+
+  - name: aura_matters
+    parent: enchantment_matters
+    facet: type
+    description: Card cares specifically about auras
+    examples: []
+
+  - name: aura_attach_payoff
+    parent: aura_matters
+    facet: type
+    description: Rewards having auras attached to your creatures
+    examples: [Kor Spiritdancer, Daxos of Meletis]
+
+  # --- equipment_matters ---
+  - name: equipment_matters
+    parent: null
+    facet: type
+    description: Card cares about equipment (Voltron-adjacent archetype)
+    examples: []
+
+  - name: equip_cost_reduction
+    parent: equipment_matters
+    facet: type
+    description: Reduces equip costs or attaches equipment cheaply
+    examples: [Puresteel Paladin, Sigarda's Aid]
+
+  - name: equipment_tutor
+    parent: equipment_matters
+    facet: type
+    description: Searches library for equipment
+    examples: [Stonehewer Giant, Stoneforge Mystic]
+
+  - name: equipment_attach_payoff
+    parent: equipment_matters
+    facet: type
+    description: Triggers when equipment is attached to your creatures
+    examples: [Nazahn Revered Bladesmith, Valduk Keeper of the Flame]
+
+  - name: equipment_recursion
+    parent: equipment_matters
+    facet: type
+    description: Returns equipment from graveyard to hand or battlefield
+    examples: [Auriok Salvagers, Argivian Archaeologist]
+
+  # --- snow_matters ---
+  - name: snow_matters
+    parent: null
+    facet: type
+    description: Card is a snow permanent or cares about snow permanents. Tagged by Snow supertype as an exception to the rules-scope rule, or by oracle text referencing snow.
+    examples: [Snow-Covered Forest, Scrying Sheets]
+
+  - name: snow_payoff
+    parent: snow_matters
+    facet: type
+    description: Card triggers on, scales with, or specifically benefits from snow permanents or snow mana
+    examples: [Scrying Sheets, Rimefeather Owl, Skred]
+
+  # ======= Format facet =======
+
+  # --- commander_format_matters ---
+  - name: commander_format_matters
+    parent: null
+    facet: format
+    description: Card interacts with Commander-format-specific mechanics
+    examples: []
+
+  - name: monarch
+    parent: commander_format_matters
+    facet: format
+    description: Creates the Monarch designation or interacts with it
+    examples: [Palace Jailer, Throne of the High City]
+
+  - name: initiative
+    parent: commander_format_matters
+    facet: format
+    description: Takes the Initiative designation or interacts with the Undercity
+    examples: [White Plume Adventurer, Caves of Chaos Adventurer]
+
+  - name: partner
+    parent: commander_format_matters
+    facet: format
+    description: Has Partner or Partner With keyword
+    examples: [Thrasios Triton Hero, Tymna the Weaver]
+
+  - name: background
+    parent: commander_format_matters
+    facet: format
+    description: Has Choose a Background keyword or is a Background enchantment
+    examples: [Faceless One, Raised by Giants]
+
+  - name: dungeon_matters
+    parent: commander_format_matters
+    facet: format
+    description: Ventures into dungeons or triggers on dungeon completion
+    examples: [Acererak the Archlich, Varis Silverymoon Ranger]
+
+# -----------------------------------------------------------------------------
+# Tier 3 — Mechanic Tags (open vocabulary, populated at tag time)
+# Empty for v1. The Tier 3 mechanics registry is seeded progressively by the
+# LLM classifier as it observes Scryfall keywords and named game constructs.
+# -----------------------------------------------------------------------------
+mechanics_seed: []
