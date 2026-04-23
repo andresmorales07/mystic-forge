@@ -59,7 +59,18 @@ public static class DependencyInjection
         services.AddScoped<IPrintingWriter, PrintingWriter>();
         services.AddScoped<IOracleEventEmitter, OracleEventEmitter>();
         services.AddScoped<IIngestRunTracker, IngestRunTracker>();
+        services.AddScoped<ScryfallIngestJob>();
 
         return services;
+    }
+
+    public static void RegisterScryfallRecurringJob(IServiceProvider services, string bulkType)
+    {
+        var manager = services.GetRequiredService<IRecurringJobManager>();
+        manager.AddOrUpdate<ScryfallIngestJob>(
+            recurringJobId: "scryfall.ingest.default-cards",
+            methodCall: job => job.RunAsync(bulkType, CancellationToken.None),
+            cronExpression: "0 10 * * *",
+            options: new RecurringJobOptions { TimeZone = TimeZoneInfo.Utc });
     }
 }

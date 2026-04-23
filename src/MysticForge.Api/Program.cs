@@ -31,6 +31,8 @@ builder.Services
 
 var app = builder.Build();
 
+MysticForge.Infrastructure.DependencyInjection.RegisterScryfallRecurringJob(app.Services, "default_cards");
+
 app.UseSerilogRequestLogging();
 
 app.MapGet("/", () => "Mystic Forge API");
