@@ -14,5 +14,6 @@
     <PackageReference Include="Hangfire.PostgreSql" />
     <PackageReference Include="AspNetCore.HealthChecks.NpgSql" />
     <PackageReference Include="Microsoft.Extensions.Http" />
+    <PackageReference Include="YamlDotNet" />
   </ItemGroup>
 </Project>
