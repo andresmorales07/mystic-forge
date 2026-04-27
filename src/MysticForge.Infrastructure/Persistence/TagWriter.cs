@@ -25,11 +25,11 @@ public sealed class TagWriter : ITagWriter
         await db.Database.ExecuteSqlInterpolatedAsync(
             $"DELETE FROM card_tribal_interest WHERE oracle_id = {evt.OracleId}", ct);
 
-        if (tags.RoleRows.Count > 0) await db.CardRoles.AddRangeAsync(tags.RoleRows, ct);
-        if (tags.HookRows.Count > 0) await db.CardSynergyHooks.AddRangeAsync(tags.HookRows, ct);
-        if (tags.AncestorRows.Count > 0) await db.CardSynergyHookAncestors.AddRangeAsync(tags.AncestorRows, ct);
-        if (tags.MechanicRows.Count > 0) await db.CardMechanics.AddRangeAsync(tags.MechanicRows, ct);
-        if (tags.TribalRows.Count > 0) await db.CardTribalInterest.AddRangeAsync(tags.TribalRows, ct);
+        if (tags.RoleRows.Count > 0)      await db.CardRoles.AddRangeAsync(tags.RoleRows, ct);
+        if (tags.HookRows.Count > 0)      await db.CardSynergyHooks.AddRangeAsync(tags.HookRows, ct);
+        if (tags.AncestorRows.Count > 0)  await db.CardSynergyHookAncestors.AddRangeAsync(tags.AncestorRows, ct);
+        if (tags.MechanicRows.Count > 0)  await db.CardMechanics.AddRangeAsync(tags.MechanicRows, ct);
+        if (tags.TribalRows.Count > 0)    await db.CardTribalInterest.AddRangeAsync(tags.TribalRows, ct);
 
         await db.Database.ExecuteSqlInterpolatedAsync(
             $"UPDATE card_oracle_events SET consumed_at = now() WHERE event_id = {evt.EventId}", ct);

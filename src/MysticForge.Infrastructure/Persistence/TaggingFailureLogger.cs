@@ -35,10 +35,11 @@ public sealed class TaggingFailureLogger : ITaggingFailureLogger
 
     private static string ClassifyError(Exception ex) => ex switch
     {
-        HttpRequestException => "http_error",
+        HttpRequestException           => "http_error",
         System.Text.Json.JsonException => "schema_violation",
-        TaskCanceledException => "http_error",
-        InvalidOperationException io when io.Message.Contains("schema", StringComparison.OrdinalIgnoreCase) => "schema_violation",
-        _ => "other",
+        TaskCanceledException          => "http_error",
+        InvalidOperationException io when io.Message.Contains("schema", StringComparison.OrdinalIgnoreCase)
+                                       => "schema_violation",
+        _                              => "other",
     };
 }

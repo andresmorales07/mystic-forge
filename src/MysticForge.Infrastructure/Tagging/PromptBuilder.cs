@@ -47,17 +47,17 @@ public sealed class PromptBuilder : IPromptBuilder
 
     private static void AppendRoleDescriptions(StringBuilder sb)
     {
-        WriteRole(sb, Role.Ramp, "produces or accelerates mana (mana rocks, mana dorks, ramp spells)");
-        WriteRole(sb, Role.Draw, "replaces itself or generates additional cards");
-        WriteRole(sb, Role.Tutor, "searches the library for a specific card or category");
-        WriteRole(sb, Role.Removal, "destroys, exiles, bounces, or neutralizes a single permanent");
+        WriteRole(sb, Role.Ramp,         "produces or accelerates mana (mana rocks, mana dorks, ramp spells)");
+        WriteRole(sb, Role.Draw,         "replaces itself or generates additional cards");
+        WriteRole(sb, Role.Tutor,        "searches the library for a specific card or category");
+        WriteRole(sb, Role.Removal,      "destroys, exiles, bounces, or neutralizes a single permanent");
         WriteRole(sb, Role.Counterspell, "counters a spell on the stack");
-        WriteRole(sb, Role.Wipe, "destroys, exiles, or bounces multiple permanents");
-        WriteRole(sb, Role.Protection, "prevents damage to or grants hexproof/indestructible/shroud to permanents or players");
-        WriteRole(sb, Role.WinCon, "win condition: directly wins the game or telegraphs an alternate win");
-        WriteRole(sb, Role.Stax, "global hate piece slowing the game (taxes, restrictions on opponents)");
-        WriteRole(sb, Role.LockPiece, "narrow asymmetric lock that shuts down a specific axis");
-        WriteRole(sb, Role.Utility, "miscellaneous useful effects not otherwise categorized");
+        WriteRole(sb, Role.Wipe,         "destroys, exiles, or bounces multiple permanents");
+        WriteRole(sb, Role.Protection,   "prevents damage to or grants hexproof/indestructible/shroud to permanents or players");
+        WriteRole(sb, Role.WinCon,       "win condition: directly wins the game or telegraphs an alternate win");
+        WriteRole(sb, Role.Stax,         "global hate piece slowing the game (taxes, restrictions on opponents)");
+        WriteRole(sb, Role.LockPiece,    "narrow asymmetric lock that shuts down a specific axis");
+        WriteRole(sb, Role.Utility,      "miscellaneous useful effects not otherwise categorized");
     }
 
     private static void WriteRole(StringBuilder sb, string role, string description) =>
