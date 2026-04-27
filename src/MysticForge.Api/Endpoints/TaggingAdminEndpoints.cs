@@ -70,6 +70,61 @@ public static class TaggingAdminEndpoints
             return Results.Ok(new { eventsEmitted = emitted, taxonomyVersion = current, subtree });
         });
 
+        builder.MapGet("/admin/mechanics/unreviewed", async (
+            MysticForgeDbContext db,
+            CancellationToken ct) =>
+        {
+            var rows = await db.Mechanics
+                .Where(m => !m.Reviewed)
+                .Select(m => new
+                {
+                    id = m.Id,
+                    name = m.Name,
+                    displayName = m.DisplayName,
+                    firstSeenAt = m.FirstSeenAt,
+                    cardCount = db.CardMechanics.Count(cm => cm.MechanicId == m.Id),
+                    sampleOracleIds = db.CardMechanics
+                        .Where(cm => cm.MechanicId == m.Id)
+                        .OrderByDescending(cm => cm.TaggedAt)
+                        .Select(cm => cm.OracleId)
+                        .Take(10)
+                        .ToList(),
+                })
+                .OrderByDescending(x => x.cardCount)
+                .ToListAsync(ct);
+
+            return Results.Ok(rows);
+        });
+
+        builder.MapPost("/admin/mechanics/{id:long}/review", async (
+            long id,
+            ReviewBody body,
+            MysticForgeDbContext db,
+            CancellationToken ct) =>
+        {
+            var rows = await db.Mechanics
+                .Where(m => m.Id == id)
+                .ExecuteUpdateAsync(s => s
+                    .SetProperty(m => m.Reviewed, body.Approved)
+                    .SetProperty(m => m.ReviewedAt, DateTimeOffset.UtcNow)
+                    .SetProperty(m => m.Name, m => body.RenameTo ?? m.Name), ct);
+
+            return rows == 0
+                ? Results.NotFound()
+                : Results.Ok(new { id, reviewed = body.Approved });
+        });
+
+        builder.MapPost("/admin/mechanics/{id:long}/reject", async (
+            long id,
+            MysticForgeDbContext db,
+            CancellationToken ct) =>
+        {
+            var rows = await db.Mechanics.Where(m => m.Id == id).ExecuteDeleteAsync(ct);
+            return rows == 0 ? Results.NotFound() : Results.Ok(new { id, deleted = true });
+        });
+
         return builder;
     }
 }
+
+public sealed record ReviewBody(bool Approved, string? RenameTo);
