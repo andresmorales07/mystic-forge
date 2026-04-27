@@ -1,0 +1,28 @@
+{
+  "hooks": {
+    "PostToolUse": [
+      {
+        "matcher": "Edit|Write",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "jq -r '.tool_input.file_path // empty' | tr -d '\\r' | { read -r f; [[ \"$f\" == *.cs ]] && dotnet format \"C:/Repos/mystic-forge/MysticForge.sln\" --include \"$f\" 2>/dev/null || true; }",
+            "timeout": 30,
+            "statusMessage": "Formatting C#..."
+          }
+        ]
+      }
+    ],
+    "PreToolUse": [
+      {
+        "matcher": "Edit|Write",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "jq -r '.tool_input.file_path // empty' | tr -d '\\r' | { read -r f; if echo \"$f\" | grep -qE '/Migrations/.*\\.Designer\\.cs$|ModelSnapshot\\.cs$'; then echo '{\"continue\":false,\"stopReason\":\"EF-generated migration file — use dotnet ef migrations add instead\"}'; fi; } 2>/dev/null || true"
+          }
+        ]
+      }
+    ]
+  }
+}

@@ -1,5 +1,13 @@
 {
   "mcpServers": {
+    "postgres": {
+      "command": "npx",
+      "args": [
+        "-y",
+        "@modelcontextprotocol/server-postgres",
+        "postgresql://mysticforge:devpassword@localhost:5432/mysticforge"
+      ]
+    },
     "serena": {
       "command": "uvx",
       "args": [
