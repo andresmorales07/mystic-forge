@@ -7,17 +7,6 @@
         "@modelcontextprotocol/server-postgres",
         "postgresql://mysticforge:devpassword@localhost:5432/mysticforge"
       ]
-    },
-    "serena": {
-      "command": "uvx",
-      "args": [
-        "--from",
-        "git+https://github.com/oraios/serena",
-        "serena",
-        "start-mcp-server",
-        "--context",
-        "claude-code"
-      ]
     }
   }
 }

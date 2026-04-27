@@ -85,17 +85,19 @@ No secrets in git, ever. `appsettings.Production.json` is not committed.
 
 All LLM calls go through **OpenRouter** (OpenAI-compatible API at `https://openrouter.ai/api/v1`). Do **not** add the Anthropic .NET SDK. Model id is a config value (e.g. `anthropic/claude-haiku-4-5`) and is recorded on `card_tags.model_version` when a card is tagged.
 
-## Navigating the codebase — prefer Serena MCP
+## Navigating and editing the codebase — prefer Serena MCP
 
-When exploring or editing this codebase, prefer the **Serena MCP server**'s semantic tools over `Read`-whole-file approaches. Serena understands C# symbols via LSP and only returns the structure/bodies you actually ask for, which keeps the context budget lean on a multi-project .NET solution.
+**Use Serena MCP tools as the primary interface for reading and editing code.** Only fall back to the built-in `Read`, `Edit`, `Write`, and `Grep` tools when Serena is unavailable or the task genuinely can't be expressed as a symbolic operation. This keeps the context budget lean on a multi-project .NET solution — Serena returns only what you ask for, whereas `Read` dumps entire files.
+
+Serena understands C# symbols via LSP:
 
 - Start with `get_symbols_overview` on a file or `list_dir` on a folder before reading anything in full.
 - Use `find_symbol` with a `name_path` (and `include_body` only when you need the body) rather than `Read`-ing an entire file.
-- Use `find_referencing_symbols` to trace a method's callers instead of grepping.
+- Use `find_referencing_symbols` to trace a method's callers instead of `Grep`.
 - For edits, `insert_before_symbol` / `insert_after_symbol` / `replace_symbol_body` are surgical and cheap; fall back to `Edit` only when the change doesn't fit a single symbol.
 - `search_for_pattern` is fine for free-text searches the symbolic tools can't express.
 
-Reading a whole file is a last resort, not the default.
+Reading or writing a whole file is a last resort, not the default.
 
 ## Branch naming
 
@@ -109,7 +111,8 @@ Slugs: lowercase, hyphen-separated, brief (e.g. `feature/scryfall-bulk-ingest`).
 
 ## Commit and deployment guardrails
 
-- Ask before committing. The user approves commits explicitly; don't pre-stage or commit on their behalf.
+- Commits on `feature/*`, `fix/*`, and `chore/*` branches are allowed without asking.
+- Never commit directly to `main`. All changes reach `main` via a PR from a branch.
 - Never force-push to `main`. Public repo.
 - Deployment to Proxmox is deferred until end of Phase 1. `docker-compose.prod.yml` is committed but nothing is running.
 
