@@ -78,6 +78,67 @@ public static class DependencyInjection
         services.AddScoped<IIngestRunTracker, IngestRunTracker>();
         services.AddScoped<ScryfallIngestJob>();
 
+        // ---- Phase 2b: tagging pipeline ----
+
+        services.AddOptions<MysticForge.Application.Tagging.TagDrainOptions>()
+            .Bind(configuration.GetSection(MysticForge.Application.Tagging.TagDrainOptions.SectionName));
+
+        var openRouterBaseUrl = configuration["OpenRouter:BaseUrl"]
+            ?? throw new InvalidOperationException("OpenRouter:BaseUrl is not configured.");
+        var openRouterApiKey = configuration["OpenRouter:ApiKey"] ?? string.Empty;
+        var openRouterModel = configuration["OpenRouter:TaggingModel"]
+            ?? throw new InvalidOperationException("OpenRouter:TaggingModel is not configured.");
+
+        // Typed HttpClient is transient by default — every resolution gets a fresh instance from
+        // IHttpClientFactory. We use AddTypedClient to construct AND Configure() in one step so
+        // every materialized instance has model+apiKey set, not just the first one.
+        services.AddHttpClient<MysticForge.Application.Tagging.IOpenRouterTaggingClient, MysticForge.Infrastructure.Tagging.OpenRouterTaggingClient>(http =>
+        {
+            http.BaseAddress = new Uri(openRouterBaseUrl.TrimEnd('/') + "/");
+            http.DefaultRequestHeaders.Add("HTTP-Referer", "https://github.com/AndresT/MysticForge");
+            http.DefaultRequestHeaders.Add("X-Title", "Mystic Forge");
+        })
+        .AddTypedClient<MysticForge.Application.Tagging.IOpenRouterTaggingClient>((http, sp) =>
+        {
+            var client = new MysticForge.Infrastructure.Tagging.OpenRouterTaggingClient(
+                http,
+                sp.GetRequiredService<MysticForge.Application.Tagging.IPromptBuilder>(),
+                sp.GetRequiredService<Microsoft.Extensions.Logging.ILogger<MysticForge.Infrastructure.Tagging.OpenRouterTaggingClient>>());
+            client.Configure(openRouterModel, openRouterApiKey);
+            return client;
+        })
+        .AddStandardResilienceHandler();
+
+        services.AddSingleton<MysticForge.Application.Tagging.ITaxonomyCache, MysticForge.Infrastructure.Tagging.TaxonomyCache>();
+        services.AddSingleton<MysticForge.Application.Tagging.IPromptBuilder, MysticForge.Infrastructure.Tagging.PromptBuilder>();
+        services.AddSingleton<MysticForge.Application.Tagging.ITaxonomyV1YamlParser, MysticForge.Infrastructure.Seeding.TaxonomyV1YamlParser>();
+        services.AddSingleton<MysticForge.Application.Tagging.IMechanicsRegistry, MysticForge.Infrastructure.Tagging.MechanicsRegistry>();
+
+        services.AddScoped<MysticForge.Application.Tagging.ICardReader, MysticForge.Infrastructure.Persistence.CardReader>();
+        services.AddScoped<MysticForge.Application.Tagging.IOutboxClaimer, MysticForge.Infrastructure.Persistence.OutboxClaimer>();
+        services.AddScoped<MysticForge.Application.Tagging.ITagSetResolver, MysticForge.Infrastructure.Tagging.TagSetResolver>();
+        services.AddScoped<MysticForge.Application.Tagging.ITaggingFailureLogger, MysticForge.Infrastructure.Persistence.TaggingFailureLogger>();
+        services.AddScoped<MysticForge.Application.Tagging.ITagWriter>(sp =>
+        {
+            var factory = sp.GetRequiredService<IDbContextFactory<MysticForge.Infrastructure.Persistence.MysticForgeDbContext>>();
+            return new MysticForge.Infrastructure.Persistence.TagWriter(() => factory.CreateDbContext());
+        });
+
+        services.AddScoped<MysticForge.Application.Tagging.TagDrainJob>();
+
+        // Hosted services — registration order matters; they run sequentially at startup.
+        // 1) Auto-seed taxonomy if synergy_hooks is empty.
+        services.AddHostedService(sp =>
+        {
+            var yamlPath = Path.Combine(AppContext.BaseDirectory, "Seeding", "taxonomy-v1.yaml");
+            return new MysticForge.Infrastructure.Seeding.AutoSeedHostedService(
+                sp,
+                sp.GetRequiredService<Microsoft.Extensions.Logging.ILogger<MysticForge.Infrastructure.Seeding.AutoSeedHostedService>>(),
+                yamlPath);
+        });
+        // 2) Warm the in-memory taxonomy cache after seed.
+        services.AddHostedService<MysticForge.Infrastructure.Tagging.TaxonomyCacheLoader>();
+
         return services;
     }
 
@@ -88,6 +149,20 @@ public static class DependencyInjection
             recurringJobId: "scryfall.ingest.default-cards",
             methodCall: job => job.RunAsync(bulkType, CancellationToken.None),
             cronExpression: "0 10 * * *",
+            options: new RecurringJobOptions { TimeZone = TimeZoneInfo.Utc });
+    }
+
+    public static void RegisterTagDrainRecurringJob(IServiceProvider services, TimeSpan interval)
+    {
+        var manager = services.GetRequiredService<IRecurringJobManager>();
+        // Hangfire cron is 1-minute granularity. We round the configured interval up
+        // to the nearest minute (minimum 1) and use a */N pattern.
+        var minutes = Math.Max(1, (int)Math.Floor(interval.TotalMinutes));
+        var cron = $"*/{minutes} * * * *";
+        manager.AddOrUpdate<MysticForge.Application.Tagging.TagDrainJob>(
+            recurringJobId: "tagging.drain",
+            methodCall: job => job.RunAsync(CancellationToken.None),
+            cronExpression: cron,
             options: new RecurringJobOptions { TimeZone = TimeZoneInfo.Utc });
     }
 }
