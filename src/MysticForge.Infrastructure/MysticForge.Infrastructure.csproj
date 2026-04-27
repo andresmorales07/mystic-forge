@@ -23,4 +23,10 @@
     <PackageReference Include="Microsoft.Extensions.Http" />
     <PackageReference Include="YamlDotNet" />
   </ItemGroup>
+
+  <ItemGroup>
+    <Content Include="Seeding/taxonomy-v1.yaml">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+  </ItemGroup>
 </Project>
