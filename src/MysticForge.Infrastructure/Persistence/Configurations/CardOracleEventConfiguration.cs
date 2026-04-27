@@ -9,7 +9,9 @@ public sealed class CardOracleEventConfiguration : IEntityTypeConfiguration<Card
 {
     public void Configure(EntityTypeBuilder<CardOracleEvent> builder)
     {
-        builder.ToTable("card_oracle_events");
+        builder.ToTable("card_oracle_events", t => t.HasCheckConstraint(
+            "card_oracle_events_event_type_chk",
+            "event_type IN ('created', 'errata', 'model_bump', 'taxonomy_bump')"));
         builder.HasKey(e => e.EventId);
         builder.Property(e => e.EventId).UseIdentityAlwaysColumn();
 
@@ -21,8 +23,19 @@ public sealed class CardOracleEventConfiguration : IEntityTypeConfiguration<Card
         builder.Property(e => e.ObservedAt).IsRequired().HasColumnType("timestamptz").HasDefaultValueSql("now()");
         builder.Property(e => e.ConsumedAt).HasColumnType("timestamptz");
 
+        // Phase 2b: claim columns.
+        builder.Property(e => e.ClaimedAt).HasColumnType("timestamptz");
+        builder.Property(e => e.ClaimedBy);
+        builder.Property(e => e.ClaimAttempts).HasDefaultValue((short)0);
+
         builder.HasIndex(e => e.ObservedAt)
             .HasDatabaseName("card_oracle_events_unconsumed_idx")
+            .HasFilter("consumed_at IS NULL");
+
+        // Drives the claim query: "find unconsumed events whose claim has expired or never started".
+        // Single-column on ClaimedAt because consumed_at is always NULL inside the partial index.
+        builder.HasIndex(e => e.ClaimedAt)
+            .HasDatabaseName("card_oracle_events_claim_idx")
             .HasFilter("consumed_at IS NULL");
 
         builder.HasOne<Card>()

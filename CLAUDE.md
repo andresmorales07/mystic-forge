@@ -39,6 +39,13 @@ Dependency rules: Domain → nothing; Application → Domain; Infrastructure →
 - **Serilog everywhere.** Console + rolling file sinks, request-ID enricher.
 - **No AutoMapper** until there's a real reason for one. Direct mapping first.
 - **Anemic Domain is worse than no Domain project.** Put real behavior on entities (invariants, hash computation, errata comparison).
+- **Visual alignment.** When repeated structures share a shape, align them by column. The cost of a churn-on-insert diff is paid back many times over by the scan-friendly result. Apply to:
+  - Consts in static enum-style classes — align the `=` column.
+  - `[JsonPropertyName(...)]` (and similar) attributes on positional record params or class fields — align the type/identifier column.
+  - Repeated calls with the same arg shape (e.g. `WriteRole(sb, Role.X, "...")`, `[InlineData(x, y)]`) — align the trailing arg column.
+  - `if`/switch arms with parallel structure — align the action column. Long single arms wrap; the action goes on a continuation line indented to the alignment column.
+
+  See `RawTagSet.cs` and `OpenRouterRequestModels.cs` for the canonical pattern.
 
 ## Running locally
 
