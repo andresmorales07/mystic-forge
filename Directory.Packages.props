@@ -20,7 +20,7 @@
     <PackageVersion Include="Pgvector.EntityFrameworkCore" Version="0.3.0" />
     <!-- Hangfire -->
     <PackageVersion Include="Hangfire.AspNetCore" Version="1.8.23" />
-    <PackageVersion Include="Hangfire.PostgreSql" Version="1.20.9" />
+    <PackageVersion Include="Hangfire.PostgreSql" Version="1.21.1" />
     <!-- Pinned to patch CVE in transitive Newtonsoft.Json 11.0.1 pulled in by Hangfire.AspNetCore. -->
     <PackageVersion Include="Newtonsoft.Json" Version="13.0.4" />
     <!-- Logging -->
