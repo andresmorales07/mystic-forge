@@ -43,6 +43,8 @@ MysticForge.Infrastructure.DependencyInjection.RegisterScryfallRecurringJob(app.
 var taggingOptions = app.Services.GetRequiredService<Microsoft.Extensions.Options.IOptions<TaggingOptions>>().Value;
 MysticForge.Infrastructure.DependencyInjection.RegisterTagDrainRecurringJob(app.Services, taggingOptions.DrainInterval);
 
+MysticForge.Infrastructure.DependencyInjection.RegisterSpellbookRecurringJob(app.Services);
+
 app.UseSerilogRequestLogging();
 
 app.MapGet("/", () => "Mystic Forge API");
