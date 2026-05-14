@@ -1,6 +1,7 @@
 using Hangfire;
 using MysticForge.Api.Endpoints;
 using MysticForge.Api.Options;
+using MysticForge.Infrastructure.Spellbook;
 using MysticForge.Infrastructure;
 using Serilog;
 
@@ -42,6 +43,8 @@ MysticForge.Infrastructure.DependencyInjection.RegisterScryfallRecurringJob(app.
 var taggingOptions = app.Services.GetRequiredService<Microsoft.Extensions.Options.IOptions<TaggingOptions>>().Value;
 MysticForge.Infrastructure.DependencyInjection.RegisterTagDrainRecurringJob(app.Services, taggingOptions.DrainInterval);
 
+MysticForge.Infrastructure.DependencyInjection.RegisterSpellbookRecurringJob(app.Services);
+
 app.UseSerilogRequestLogging();
 
 app.MapGet("/", () => "Mystic Forge API");
@@ -63,6 +66,7 @@ if (app.Environment.IsDevelopment())
     });
 
     app.MapTaggingDevEndpoints();
+    app.MapSpellbookDevEndpoints();
 }
 
 app.MapTaggingAdminEndpoints();

@@ -3,9 +3,14 @@ using Hangfire.PostgreSql;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.DependencyInjection.Extensions;
+using Microsoft.Extensions.Options;
 using MysticForge.Application.Scryfall;
+using MysticForge.Application.Spellbook;
+using MysticForge.Infrastructure.HealthChecks;
 using MysticForge.Infrastructure.Persistence;
 using MysticForge.Infrastructure.Scryfall;
+using MysticForge.Infrastructure.Spellbook;
 
 namespace MysticForge.Infrastructure;
 
@@ -54,7 +59,8 @@ public static class DependencyInjection
         services.AddHangfireServer();
 
         services.AddHealthChecks()
-            .AddNpgSql(connectionString, name: "postgres");
+            .AddNpgSql(connectionString, name: "postgres")
+            .AddCheck<SpellbookMirrorStalenessCheck>("spellbook-mirror");
 
         var scryfallBaseUrl = configuration["Scryfall:BulkDataEndpoint"]
             ?? throw new InvalidOperationException("Scryfall:BulkDataEndpoint is not configured.");
@@ -126,6 +132,46 @@ public static class DependencyInjection
 
         services.AddScoped<MysticForge.Application.Tagging.TagDrainJob>();
 
+        // ---- Phase 3a: Commander Spellbook mirror ----
+
+        // TimeProvider is consumed by ComboMirrorWriter, SpellbookIngestRunTracker,
+        // SpellbookFindMyCombosClient and SpellbookMirrorStalenessCheck.
+        services.TryAddSingleton(TimeProvider.System);
+
+        services.AddTransient<Microsoft.Kiota.Abstractions.Authentication.IAuthenticationProvider,
+                              Microsoft.Kiota.Abstractions.Authentication.AnonymousAuthenticationProvider>();
+
+        services.AddHttpClient("Spellbook", (sp, http) =>
+        {
+            var opts = sp.GetRequiredService<IOptions<CommanderSpellbookOptions>>().Value;
+            http.BaseAddress = new Uri(opts.BaseUrl);
+            http.DefaultRequestHeaders.UserAgent.ParseAdd(opts.UserAgent);
+            http.Timeout = TimeSpan.FromSeconds(opts.RefreshRequestTimeoutSeconds);
+        })
+        .AddStandardResilienceHandler(o =>
+        {
+            o.Retry.MaxRetryAttempts = 3;
+            o.Retry.UseJitter        = true;
+            o.AttemptTimeout.Timeout = TimeSpan.FromSeconds(15);
+        });
+
+        services.AddTransient<MysticForge.CommanderSpellbook.Generated.SpellbookApiClient>(sp =>
+        {
+            var httpFactory  = sp.GetRequiredService<IHttpClientFactory>();
+            var http         = httpFactory.CreateClient("Spellbook");
+            var authProvider = sp.GetRequiredService<Microsoft.Kiota.Abstractions.Authentication.IAuthenticationProvider>();
+            var adapter      = new Microsoft.Kiota.Http.HttpClientLibrary.HttpClientRequestAdapter(authProvider, httpClient: http);
+            return new MysticForge.CommanderSpellbook.Generated.SpellbookApiClient(adapter);
+        });
+
+        services.AddScoped<ISpellbookRefreshClient,    SpellbookRefreshClient>();
+        services.AddScoped<IComboMirrorWriter,         ComboMirrorWriter>();
+        services.AddScoped<IComboReader,               ComboReader>();
+        services.AddScoped<ICardNameResolver,          CardNameResolver>();
+        services.AddScoped<ISpellbookIngestRunTracker, SpellbookIngestRunTracker>();
+        services.AddScoped<IFindMyCombosClient,        SpellbookFindMyCombosClient>();
+        services.AddScoped<MysticForge.Application.Spellbook.SpellbookRefreshJob>();
+
         // Hosted services — registration order matters; they run sequentially at startup.
         // 1) Auto-seed taxonomy if synergy_hooks is empty.
         services.AddHostedService(sp =>
@@ -163,6 +209,17 @@ public static class DependencyInjection
             recurringJobId: "tagging.drain",
             methodCall: job => job.RunAsync(CancellationToken.None),
             cronExpression: cron,
+            options: new RecurringJobOptions { TimeZone = TimeZoneInfo.Utc });
+    }
+
+    public static void RegisterSpellbookRecurringJob(IServiceProvider services)
+    {
+        var opts    = services.GetRequiredService<IOptions<CommanderSpellbookOptions>>().Value;
+        var manager = services.GetRequiredService<IRecurringJobManager>();
+        manager.AddOrUpdate<MysticForge.Application.Spellbook.SpellbookRefreshJob>(
+            recurringJobId: "spellbook.refresh",
+            methodCall: job => job.RunAsync(CancellationToken.None),
+            cronExpression: opts.RefreshCron,
             options: new RecurringJobOptions { TimeZone = TimeZoneInfo.Utc });
     }
 }

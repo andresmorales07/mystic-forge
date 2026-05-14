@@ -63,3 +63,22 @@ jobs:
             echo "::error::Vulnerable NuGet packages detected. Review the output above."
             exit 1
           fi
+
+  verify-spellbook-codegen:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-dotnet@v5
+        with:
+          dotnet-version: "10.0.x"
+      - name: Install Kiota
+        run: dotnet tool install --global Microsoft.OpenApi.Kiota
+      - name: Regenerate Spellbook client
+        run: ./scripts/regen-spellbook-client.sh
+      - name: Fail if generated files drifted
+        run: |
+          if ! git diff --quiet; then
+            echo "Generated Spellbook client is out of date. Run scripts/regen-spellbook-client.sh and commit."
+            git --no-pager diff --stat
+            exit 1
+          fi

@@ -284,6 +284,399 @@ namespace MysticForge.Infrastructure.Migrations
                         });
                 });
 
+            modelBuilder.Entity("MysticForge.Domain.Spellbook.Combo", b =>
+                {
+                    b.Property<string>("Id")
+                        .HasColumnType("text")
+                        .HasColumnName("id");
+
+                    b.Property<string>("BracketTag")
+                        .HasColumnType("text")
+                        .HasColumnName("bracket_tag");
+
+                    b.Property<DateTimeOffset>("CreatedAt")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("timestamptz")
+                        .HasColumnName("created_at")
+                        .HasDefaultValueSql("now()");
+
+                    b.Property<DateTimeOffset?>("DeletedAt")
+                        .HasColumnType("timestamptz")
+                        .HasColumnName("deleted_at");
+
+                    b.Property<string>("Description")
+                        .HasColumnType("text")
+                        .HasColumnName("description");
+
+                    b.Property<string>("Identity")
+                        .IsRequired()
+                        .HasColumnType("text")
+                        .HasColumnName("identity");
+
+                    b.Property<long>("LastSeenRunId")
+                        .HasColumnType("bigint")
+                        .HasColumnName("last_seen_run_id");
+
+                    b.Property<string>("LegalitiesJson")
+                        .HasColumnType("jsonb")
+                        .HasColumnName("legalities");
+
+                    b.Property<string>("ManaNeeded")
+                        .HasColumnType("text")
+                        .HasColumnName("mana_needed");
+
+                    b.Property<decimal?>("ManaValueNeeded")
+                        .HasColumnType("numeric")
+                        .HasColumnName("mana_value_needed");
+
+                    b.Property<string>("Notes")
+                        .HasColumnType("text")
+                        .HasColumnName("notes");
+
+                    b.Property<string>("OtherPrerequisites")
+                        .HasColumnType("text")
+                        .HasColumnName("other_prerequisites");
+
+                    b.Property<int?>("Popularity")
+                        .HasColumnType("integer")
+                        .HasColumnName("popularity");
+
+                    b.Property<bool>("Spoiler")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("boolean")
+                        .HasDefaultValue(false)
+                        .HasColumnName("spoiler");
+
+                    b.Property<string>("Status")
+                        .IsRequired()
+                        .HasColumnType("text")
+                        .HasColumnName("status");
+
+                    b.Property<DateTimeOffset>("UpdatedAt")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("timestamptz")
+                        .HasColumnName("updated_at")
+                        .HasDefaultValueSql("now()");
+
+                    b.HasKey("Id")
+                        .HasName("pk_combos");
+
+                    b.HasIndex("Id")
+                        .HasDatabaseName("combos_active_idx")
+                        .HasFilter("deleted_at IS NULL");
+
+                    b.HasIndex("Identity")
+                        .HasDatabaseName("combos_identity_idx");
+
+                    b.HasIndex("LastSeenRunId")
+                        .HasDatabaseName("combos_last_seen_run_idx");
+
+                    b.ToTable("combos", (string)null);
+                });
+
+            modelBuilder.Entity("MysticForge.Domain.Spellbook.ComboCard", b =>
+                {
+                    b.Property<string>("ComboId")
+                        .HasColumnType("text")
+                        .HasColumnName("combo_id");
+
+                    b.Property<short>("CardPosition")
+                        .HasColumnType("smallint")
+                        .HasColumnName("card_position");
+
+                    b.Property<string>("CardName")
+                        .IsRequired()
+                        .HasColumnType("text")
+                        .HasColumnName("card_name");
+
+                    b.Property<bool>("MustBeCommander")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("boolean")
+                        .HasDefaultValue(false)
+                        .HasColumnName("must_be_commander");
+
+                    b.Property<Guid?>("OracleId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("oracle_id");
+
+                    b.Property<short>("Quantity")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("smallint")
+                        .HasDefaultValue((short)1)
+                        .HasColumnName("quantity");
+
+                    b.Property<string>("ZoneLocations")
+                        .HasColumnType("text")
+                        .HasColumnName("zone_locations");
+
+                    b.HasKey("ComboId", "CardPosition")
+                        .HasName("pk_combo_cards");
+
+                    b.HasIndex("ComboId")
+                        .HasDatabaseName("combo_cards_unresolved_idx")
+                        .HasFilter("oracle_id IS NULL");
+
+                    b.HasIndex("OracleId")
+                        .HasDatabaseName("combo_cards_oracle_idx")
+                        .HasFilter("oracle_id IS NOT NULL");
+
+                    b.ToTable("combo_cards", (string)null);
+                });
+
+            modelBuilder.Entity("MysticForge.Domain.Spellbook.ComboFeature", b =>
+                {
+                    b.Property<string>("ComboId")
+                        .HasColumnType("text")
+                        .HasColumnName("combo_id");
+
+                    b.Property<long>("FeatureId")
+                        .HasColumnType("bigint")
+                        .HasColumnName("feature_id");
+
+                    b.HasKey("ComboId", "FeatureId")
+                        .HasName("pk_combo_features");
+
+                    b.HasIndex("FeatureId")
+                        .HasDatabaseName("combo_features_feature_id_idx");
+
+                    b.ToTable("combo_features", (string)null);
+                });
+
+            modelBuilder.Entity("MysticForge.Domain.Spellbook.ComboTemplate", b =>
+                {
+                    b.Property<string>("ComboId")
+                        .HasColumnType("text")
+                        .HasColumnName("combo_id");
+
+                    b.Property<long>("TemplateId")
+                        .HasColumnType("bigint")
+                        .HasColumnName("template_id");
+
+                    b.Property<short>("Quantity")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("smallint")
+                        .HasDefaultValue((short)1)
+                        .HasColumnName("quantity");
+
+                    b.HasKey("ComboId", "TemplateId")
+                        .HasName("pk_combo_templates");
+
+                    b.HasIndex("TemplateId")
+                        .HasDatabaseName("combo_templates_template_id_idx");
+
+                    b.ToTable("combo_templates", (string)null);
+                });
+
+            modelBuilder.Entity("MysticForge.Domain.Spellbook.Feature", b =>
+                {
+                    b.Property<long>("Id")
+                        .HasColumnType("bigint")
+                        .HasColumnName("id");
+
+                    b.Property<DateTimeOffset>("CreatedAt")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("timestamptz")
+                        .HasColumnName("created_at")
+                        .HasDefaultValueSql("now()");
+
+                    b.Property<DateTimeOffset?>("DeletedAt")
+                        .HasColumnType("timestamptz")
+                        .HasColumnName("deleted_at");
+
+                    b.Property<long>("LastSeenRunId")
+                        .HasColumnType("bigint")
+                        .HasColumnName("last_seen_run_id");
+
+                    b.Property<string>("Name")
+                        .IsRequired()
+                        .HasColumnType("text")
+                        .HasColumnName("name");
+
+                    b.Property<string>("Status")
+                        .IsRequired()
+                        .HasColumnType("text")
+                        .HasColumnName("status");
+
+                    b.Property<bool>("Uncountable")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("boolean")
+                        .HasDefaultValue(false)
+                        .HasColumnName("uncountable");
+
+                    b.Property<DateTimeOffset>("UpdatedAt")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("timestamptz")
+                        .HasColumnName("updated_at")
+                        .HasDefaultValueSql("now()");
+
+                    b.HasKey("Id")
+                        .HasName("pk_features");
+
+                    b.HasIndex("LastSeenRunId")
+                        .HasDatabaseName("features_last_seen_run_idx");
+
+                    b.HasIndex("Name")
+                        .IsUnique()
+                        .HasDatabaseName("features_name_active_idx")
+                        .HasFilter("deleted_at IS NULL");
+
+                    b.ToTable("features", (string)null);
+                });
+
+            modelBuilder.Entity("MysticForge.Domain.Spellbook.FindMyCombosCacheEntry", b =>
+                {
+                    b.Property<byte[]>("DeckHash")
+                        .HasColumnType("bytea")
+                        .HasColumnName("deck_hash");
+
+                    b.Property<DateTimeOffset>("ComputedAt")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("timestamptz")
+                        .HasColumnName("computed_at")
+                        .HasDefaultValueSql("now()");
+
+                    b.Property<long>("IngestRunId")
+                        .HasColumnType("bigint")
+                        .HasColumnName("ingest_run_id");
+
+                    b.Property<string>("ResponseJson")
+                        .IsRequired()
+                        .HasColumnType("jsonb")
+                        .HasColumnName("response");
+
+                    b.HasKey("DeckHash")
+                        .HasName("pk_find_my_combos_cache");
+
+                    b.HasIndex("IngestRunId")
+                        .HasDatabaseName("find_my_combos_cache_ingest_run_idx");
+
+                    b.ToTable("find_my_combos_cache", (string)null);
+                });
+
+            modelBuilder.Entity("MysticForge.Domain.Spellbook.SpellbookIngestRun", b =>
+                {
+                    b.Property<long>("RunId")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("bigint")
+                        .HasColumnName("run_id");
+
+                    NpgsqlPropertyBuilderExtensions.UseIdentityAlwaysColumn(b.Property<long>("RunId"));
+
+                    b.Property<int?>("CombosInserted")
+                        .HasColumnType("integer")
+                        .HasColumnName("combos_inserted");
+
+                    b.Property<int?>("CombosSoftDeleted")
+                        .HasColumnType("integer")
+                        .HasColumnName("combos_soft_deleted");
+
+                    b.Property<int?>("CombosUpdated")
+                        .HasColumnType("integer")
+                        .HasColumnName("combos_updated");
+
+                    b.Property<DateTimeOffset?>("CompletedAt")
+                        .HasColumnType("timestamptz")
+                        .HasColumnName("completed_at");
+
+                    b.Property<string>("ErrorMessage")
+                        .HasColumnType("text")
+                        .HasColumnName("error_message");
+
+                    b.Property<int?>("FeaturesInserted")
+                        .HasColumnType("integer")
+                        .HasColumnName("features_inserted");
+
+                    b.Property<int?>("FeaturesSeen")
+                        .HasColumnType("integer")
+                        .HasColumnName("features_seen");
+
+                    b.Property<int?>("FeaturesUpdated")
+                        .HasColumnType("integer")
+                        .HasColumnName("features_updated");
+
+                    b.Property<string>("Outcome")
+                        .HasColumnType("text")
+                        .HasColumnName("outcome");
+
+                    b.Property<DateTimeOffset>("StartedAt")
+                        .HasColumnType("timestamptz")
+                        .HasColumnName("started_at");
+
+                    b.Property<int?>("TemplatesInserted")
+                        .HasColumnType("integer")
+                        .HasColumnName("templates_inserted");
+
+                    b.Property<int?>("TemplatesSeen")
+                        .HasColumnType("integer")
+                        .HasColumnName("templates_seen");
+
+                    b.Property<int?>("TemplatesUpdated")
+                        .HasColumnType("integer")
+                        .HasColumnName("templates_updated");
+
+                    b.Property<int?>("VariantsSeen")
+                        .HasColumnType("integer")
+                        .HasColumnName("variants_seen");
+
+                    b.HasKey("RunId")
+                        .HasName("pk_spellbook_ingest_runs");
+
+                    b.HasIndex("RunId")
+                        .IsDescending()
+                        .HasDatabaseName("spellbook_ingest_runs_success_idx")
+                        .HasFilter("outcome = 'success'");
+
+                    b.ToTable("spellbook_ingest_runs", (string)null);
+                });
+
+            modelBuilder.Entity("MysticForge.Domain.Spellbook.Template", b =>
+                {
+                    b.Property<long>("Id")
+                        .HasColumnType("bigint")
+                        .HasColumnName("id");
+
+                    b.Property<DateTimeOffset>("CreatedAt")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("timestamptz")
+                        .HasColumnName("created_at")
+                        .HasDefaultValueSql("now()");
+
+                    b.Property<DateTimeOffset?>("DeletedAt")
+                        .HasColumnType("timestamptz")
+                        .HasColumnName("deleted_at");
+
+                    b.Property<long>("LastSeenRunId")
+                        .HasColumnType("bigint")
+                        .HasColumnName("last_seen_run_id");
+
+                    b.Property<string>("Name")
+                        .IsRequired()
+                        .HasColumnType("text")
+                        .HasColumnName("name");
+
+                    b.Property<string>("ScryfallApi")
+                        .HasColumnType("text")
+                        .HasColumnName("scryfall_api");
+
+                    b.Property<string>("ScryfallQuery")
+                        .HasColumnType("text")
+                        .HasColumnName("scryfall_query");
+
+                    b.Property<DateTimeOffset>("UpdatedAt")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("timestamptz")
+                        .HasColumnName("updated_at")
+                        .HasDefaultValueSql("now()");
+
+                    b.HasKey("Id")
+                        .HasName("pk_templates");
+
+                    b.HasIndex("LastSeenRunId")
+                        .HasDatabaseName("templates_last_seen_run_idx");
+
+                    b.ToTable("templates", (string)null);
+                });
+
             modelBuilder.Entity("MysticForge.Domain.Tags.CardMechanic", b =>
                 {
                     b.Property<Guid>("OracleId")
@@ -743,6 +1136,106 @@ namespace MysticForge.Infrastructure.Migrations
                         .HasConstraintName("fk_card_oracle_events_cards_oracle_id");
                 });
 
+            modelBuilder.Entity("MysticForge.Domain.Spellbook.Combo", b =>
+                {
+                    b.HasOne("MysticForge.Domain.Spellbook.SpellbookIngestRun", null)
+                        .WithMany()
+                        .HasForeignKey("LastSeenRunId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired()
+                        .HasConstraintName("fk_combos_spellbook_ingest_runs_last_seen_run_id");
+                });
+
+            modelBuilder.Entity("MysticForge.Domain.Spellbook.ComboCard", b =>
+                {
+                    b.HasOne("MysticForge.Domain.Spellbook.Combo", "Combo")
+                        .WithMany("Cards")
+                        .HasForeignKey("ComboId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired()
+                        .HasConstraintName("fk_combo_cards_combos_combo_id");
+
+                    b.HasOne("MysticForge.Domain.Cards.Card", null)
+                        .WithMany()
+                        .HasForeignKey("OracleId")
+                        .OnDelete(DeleteBehavior.SetNull)
+                        .HasConstraintName("fk_combo_cards_cards_oracle_id");
+
+                    b.Navigation("Combo");
+                });
+
+            modelBuilder.Entity("MysticForge.Domain.Spellbook.ComboFeature", b =>
+                {
+                    b.HasOne("MysticForge.Domain.Spellbook.Combo", "Combo")
+                        .WithMany("Features")
+                        .HasForeignKey("ComboId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired()
+                        .HasConstraintName("fk_combo_features_combos_combo_id");
+
+                    b.HasOne("MysticForge.Domain.Spellbook.Feature", "Feature")
+                        .WithMany()
+                        .HasForeignKey("FeatureId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired()
+                        .HasConstraintName("fk_combo_features_features_feature_id");
+
+                    b.Navigation("Combo");
+
+                    b.Navigation("Feature");
+                });
+
+            modelBuilder.Entity("MysticForge.Domain.Spellbook.ComboTemplate", b =>
+                {
+                    b.HasOne("MysticForge.Domain.Spellbook.Combo", "Combo")
+                        .WithMany("Templates")
+                        .HasForeignKey("ComboId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired()
+                        .HasConstraintName("fk_combo_templates_combos_combo_id");
+
+                    b.HasOne("MysticForge.Domain.Spellbook.Template", "Template")
+                        .WithMany()
+                        .HasForeignKey("TemplateId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired()
+                        .HasConstraintName("fk_combo_templates_templates_template_id");
+
+                    b.Navigation("Combo");
+
+                    b.Navigation("Template");
+                });
+
+            modelBuilder.Entity("MysticForge.Domain.Spellbook.Feature", b =>
+                {
+                    b.HasOne("MysticForge.Domain.Spellbook.SpellbookIngestRun", null)
+                        .WithMany()
+                        .HasForeignKey("LastSeenRunId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired()
+                        .HasConstraintName("fk_features_spellbook_ingest_runs_last_seen_run_id");
+                });
+
+            modelBuilder.Entity("MysticForge.Domain.Spellbook.FindMyCombosCacheEntry", b =>
+                {
+                    b.HasOne("MysticForge.Domain.Spellbook.SpellbookIngestRun", null)
+                        .WithMany()
+                        .HasForeignKey("IngestRunId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired()
+                        .HasConstraintName("fk_find_my_combos_cache_spellbook_ingest_runs_ingest_run_id");
+                });
+
+            modelBuilder.Entity("MysticForge.Domain.Spellbook.Template", b =>
+                {
+                    b.HasOne("MysticForge.Domain.Spellbook.SpellbookIngestRun", null)
+                        .WithMany()
+                        .HasForeignKey("LastSeenRunId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired()
+                        .HasConstraintName("fk_templates_spellbook_ingest_runs_last_seen_run_id");
+                });
+
             modelBuilder.Entity("MysticForge.Domain.Tags.CardMechanic", b =>
                 {
                     b.HasOne("MysticForge.Domain.Tags.Mechanic", null)
@@ -831,6 +1324,15 @@ namespace MysticForge.Infrastructure.Migrations
                         .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired()
                         .HasConstraintName("fk_tag_failures_card_oracle_events_event_id");
+                });
+
+            modelBuilder.Entity("MysticForge.Domain.Spellbook.Combo", b =>
+                {
+                    b.Navigation("Cards");
+
+                    b.Navigation("Features");
+
+                    b.Navigation("Templates");
                 });
 #pragma warning restore 612, 618
         }

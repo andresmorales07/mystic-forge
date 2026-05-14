@@ -10,3 +10,7 @@
 *.jpg binary
 *.ico binary
 *.pfx binary
+
+# Generated Kiota client — collapse in PR diffs, suppress local diff body
+src/MysticForge.CommanderSpellbook/Generated/** linguist-generated=true
+src/MysticForge.CommanderSpellbook/Generated/** -diff
