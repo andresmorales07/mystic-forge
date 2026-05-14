@@ -138,4 +138,88 @@ internal static class SpellbookSeedHelpers
 
         return combo;
     }
+
+    /// <summary>Inserts or replaces a Feature row directly (bypasses the writer, for seeding).</summary>
+    public static async Task<Feature> UpsertFeatureAsync(
+        MysticForgeDbContext db,
+        long                 id,
+        string               name,
+        long                 runId,
+        CancellationToken    ct = default)
+    {
+        var now      = DateTimeOffset.UtcNow;
+        var existing = await db.Features.FindAsync([id], ct);
+        if (existing is not null)
+        {
+            existing.Name          = name;
+            existing.LastSeenRunId = runId;
+            existing.DeletedAt     = null;
+            existing.UpdatedAt     = now;
+            await db.SaveChangesAsync(ct);
+            return existing;
+        }
+
+        var feature = new Feature
+        {
+            Id            = id,
+            Name          = name,
+            Status        = "ok",
+            LastSeenRunId = runId,
+            CreatedAt     = now,
+            UpdatedAt     = now,
+        };
+        db.Features.Add(feature);
+        await db.SaveChangesAsync(ct);
+        return feature;
+    }
+
+    /// <summary>Inserts or replaces a Template row directly (bypasses the writer, for seeding).</summary>
+    public static async Task<Template> UpsertTemplateAsync(
+        MysticForgeDbContext db,
+        long                 id,
+        string               name,
+        long                 runId,
+        CancellationToken    ct = default)
+    {
+        var now      = DateTimeOffset.UtcNow;
+        var existing = await db.Templates.FindAsync([id], ct);
+        if (existing is not null)
+        {
+            existing.Name          = name;
+            existing.LastSeenRunId = runId;
+            existing.DeletedAt     = null;
+            existing.UpdatedAt     = now;
+            await db.SaveChangesAsync(ct);
+            return existing;
+        }
+
+        var template = new Template
+        {
+            Id            = id,
+            Name          = name,
+            LastSeenRunId = runId,
+            CreatedAt     = now,
+            UpdatedAt     = now,
+        };
+        db.Templates.Add(template);
+        await db.SaveChangesAsync(ct);
+        return template;
+    }
+
+    /// <summary>Inserts a FindMyCombosCacheEntry directly (bypasses the writer, for seeding).</summary>
+    public static async Task InsertCacheEntryAsync(
+        MysticForgeDbContext db,
+        byte[]               deckHash,
+        long                 ingestRunId,
+        CancellationToken    ct = default)
+    {
+        db.FindMyCombosCache.Add(new FindMyCombosCacheEntry
+        {
+            DeckHash     = deckHash,
+            ResponseJson = "{}",
+            IngestRunId  = ingestRunId,
+            ComputedAt   = DateTimeOffset.UtcNow,
+        });
+        await db.SaveChangesAsync(ct);
+    }
 }
