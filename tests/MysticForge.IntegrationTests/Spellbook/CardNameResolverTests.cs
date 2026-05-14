@@ -98,4 +98,31 @@ public sealed class CardNameResolverTests : IAsyncLifetime
         result.Should().ContainKey("BETA").WhoseValue.Should().Be(betaId);
         result.Should().NotContainKey("Gamma");
     }
+
+    [Fact]
+    public async Task Batch_resolution_handles_duplicate_card_names_deterministically()
+    {
+        // Real Scryfall data has multiple oracle_ids sharing a name (functional reprints,
+        // certain tokens). The resolver must not throw on duplicate keys and must pick
+        // deterministically (lowest OracleId wins).
+        Guid firstId, secondId;
+
+        await using (var db = _db.NewContext())
+        {
+            (firstId,  _) = await SpellbookSeedHelpers.InsertCardAsync(db, "Starscape Cleric");
+            (secondId, _) = await SpellbookSeedHelpers.InsertCardAsync(db, "Starscape Cleric");
+        }
+
+        var expected = firstId.CompareTo(secondId) < 0 ? firstId : secondId;
+
+        await using var ctx = _db.NewContext();
+        var resolver = NewResolver(ctx);
+
+        var single = await resolver.ResolveAsync("Starscape Cleric", CancellationToken.None);
+        var batch  = await resolver.ResolveManyAsync(["Starscape Cleric"], CancellationToken.None);
+
+        single.Should().Be(expected);
+        batch.Should().HaveCount(1);
+        batch["Starscape Cleric"].Should().Be(expected);
+    }
 }

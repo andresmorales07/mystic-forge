@@ -14,6 +14,7 @@ public sealed class CardNameResolver : ICardNameResolver
         var lowered = name.ToLowerInvariant();
         return await _db.Cards
             .Where(c => c.Name.ToLower() == lowered)
+            .OrderBy(c => c.OracleId)
             .Select(c => (Guid?)c.OracleId)
             .FirstOrDefaultAsync(ct);
     }
@@ -33,7 +34,14 @@ public sealed class CardNameResolver : ICardNameResolver
             .Select(c => new { LoweredName = c.Name.ToLower(), c.OracleId })
             .ToListAsync(ct);
 
-        return rows.ToDictionary(
-            r => loweredToOriginal[r.LoweredName], r => r.OracleId, StringComparer.Ordinal);
+        // Some names map to multiple oracle_ids (functional reprints, certain tokens).
+        // Pick a deterministic representative per lowered name — Spellbook references cards by
+        // name only, so any of the matching oracle_ids is semantically equivalent for combo lookup.
+        return rows
+            .GroupBy(r => r.LoweredName)
+            .ToDictionary(
+                g => loweredToOriginal[g.Key],
+                g => g.OrderBy(r => r.OracleId).First().OracleId,
+                StringComparer.Ordinal);
     }
 }
