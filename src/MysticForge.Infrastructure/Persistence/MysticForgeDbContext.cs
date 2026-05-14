@@ -1,6 +1,7 @@
 using Microsoft.EntityFrameworkCore;
 using MysticForge.Domain.Cards;
 using MysticForge.Domain.Events;
+using MysticForge.Domain.Spellbook;
 using MysticForge.Domain.Tags;
 using MysticForge.Infrastructure.Persistence.Entities;
 
@@ -29,6 +30,16 @@ public sealed class MysticForgeDbContext : DbContext
 
     // Phase 2b — audit.
     public DbSet<TagFailure> TagFailures => Set<TagFailure>();
+
+    // Phase 3a — Spellbook mirror.
+    public DbSet<SpellbookIngestRun>     SpellbookIngestRuns   => Set<SpellbookIngestRun>();
+    public DbSet<Feature>                Features              => Set<Feature>();
+    public DbSet<Template>               Templates             => Set<Template>();
+    public DbSet<Combo>                  Combos                => Set<Combo>();
+    public DbSet<ComboCard>              ComboCards            => Set<ComboCard>();
+    public DbSet<ComboFeature>           ComboFeatures         => Set<ComboFeature>();
+    public DbSet<ComboTemplate>          ComboTemplates        => Set<ComboTemplate>();
+    public DbSet<FindMyCombosCacheEntry> FindMyCombosCache     => Set<FindMyCombosCacheEntry>();
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
