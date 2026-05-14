@@ -1,8 +1,5 @@
 namespace MysticForge.Api.Options;
 
-public sealed class CommanderSpellbookOptions
-{
-    public const string SectionName = "CommanderSpellbook";
-
-    public required string BaseUrl { get; init; }
-}
+// Moved to MysticForge.Infrastructure.Spellbook.CommanderSpellbookOptions.
+// Kept as a forwarding alias so existing AddOptions<> binding in Program.cs
+// can reference the type via a using alias.

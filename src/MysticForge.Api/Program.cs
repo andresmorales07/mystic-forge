@@ -1,6 +1,7 @@
 using Hangfire;
 using MysticForge.Api.Endpoints;
 using MysticForge.Api.Options;
+using MysticForge.Infrastructure.Spellbook;
 using MysticForge.Infrastructure;
 using Serilog;
 
