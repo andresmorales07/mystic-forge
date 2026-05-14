@@ -1,0 +1,3708 @@
+openapi: 3.0.3
+info:
+  title: Commander Spellbook API
+  version: 5.4.7
+  description: 'API for Commander Spellbook, the combo database engine for Magic:
+    The Gathering'
+paths:
+  /:
+    get:
+      operationId: root_retrieve
+      security:
+      - basicAuth: []
+      - cookieAuth: []
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                type: object
+                additionalProperties: {}
+          description: ''
+  /{format}:
+    get:
+      operationId: root_formatted_retrieve
+      parameters:
+      - in: path
+        name: format
+        schema:
+          type: string
+          enum:
+          - .json
+        required: true
+      security:
+      - basicAuth: []
+      - cookieAuth: []
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                type: object
+                additionalProperties: {}
+          description: ''
+  /card-list-from-text:
+    get:
+      operationId: card_list_from_text_retrieve
+      tags:
+      - card-list-from-text
+      security:
+      - basicAuth: []
+      - cookieAuth: []
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Deck'
+          description: ''
+    post:
+      operationId: card_list_from_text_create
+      tags:
+      - card-list-from-text
+      requestBody:
+        content:
+          text/plain:
+            schema:
+              type: string
+      security:
+      - basicAuth: []
+      - cookieAuth: []
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Deck'
+          description: ''
+  /card-list-from-url:
+    get:
+      operationId: card_list_from_url_retrieve
+      parameters:
+      - in: query
+        name: url
+        schema:
+          type: string
+      tags:
+      - card-list-from-url
+      security:
+      - basicAuth: []
+      - cookieAuth: []
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Deck'
+          description: ''
+        '400':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/InvalidUrlResponse'
+          description: ''
+  /cards/:
+    get:
+      operationId: cards_list
+      parameters:
+      - name: count
+        required: false
+        in: query
+        description: Set to true to enable count query. If false, count will be omitted.
+        schema:
+          type: boolean
+          default: false
+      - name: limit
+        required: false
+        in: query
+        description: Number of results to return per page.
+        schema:
+          type: integer
+      - name: offset
+        required: false
+        in: query
+        description: The initial index from which to return the results.
+        schema:
+          type: integer
+      - name: ordering
+        required: false
+        in: query
+        description: Which field to use when ordering the results.
+        schema:
+          type: string
+      - name: q
+        required: false
+        in: query
+        description: A search query.
+        schema:
+          type: string
+      - in: query
+        name: replaces
+        schema:
+          type: array
+          items:
+            type: integer
+        explode: true
+        style: form
+      tags:
+      - cards
+      security:
+      - basicAuth: []
+      - cookieAuth: []
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PaginatedCardDetailList'
+          description: ''
+  /cards/{id}/:
+    get:
+      operationId: cards_retrieve
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        description: A unique integer value identifying this card.
+        required: true
+      tags:
+      - cards
+      security:
+      - basicAuth: []
+      - cookieAuth: []
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CardDetail'
+          description: ''
+  /estimate-bracket:
+    get:
+      operationId: estimate_bracket_retrieve
+      tags:
+      - estimate-bracket
+      security:
+      - basicAuth: []
+      - cookieAuth: []
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/EstimateBracketResult'
+          description: ''
+    post:
+      operationId: estimate_bracket_create
+      tags:
+      - estimate-bracket
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/DeckRequest'
+          text/plain:
+            schema:
+              type: string
+      security:
+      - basicAuth: []
+      - cookieAuth: []
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/EstimateBracketResult'
+          description: ''
+  /features/:
+    get:
+      operationId: features_list
+      parameters:
+      - name: count
+        required: false
+        in: query
+        description: Set to true to enable count query. If false, count will be omitted.
+        schema:
+          type: boolean
+          default: false
+      - name: limit
+        required: false
+        in: query
+        description: Number of results to return per page.
+        schema:
+          type: integer
+      - name: offset
+        required: false
+        in: query
+        description: The initial index from which to return the results.
+        schema:
+          type: integer
+      - name: q
+        required: false
+        in: query
+        description: A search query.
+        schema:
+          type: string
+      - in: query
+        name: status
+        schema:
+          type: array
+          items:
+            type: string
+            enum:
+            - C
+            - H
+            - HU
+            - PU
+            - S
+        description: |-
+          Is this feature an utility for variant generation, a helper to be exploited somehow, or a standalone, probably impactful effect? (public utilities are visible to combo submitters)
+
+          * `HU` - Hidden Utility
+          * `PU` - Public Utility
+          * `H` - Helper
+          * `C` - Contextual
+          * `S` - Standalone
+        explode: true
+        style: form
+      tags:
+      - features
+      security:
+      - basicAuth: []
+      - cookieAuth: []
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PaginatedFeatureList'
+          description: ''
+  /features/{id}/:
+    get:
+      operationId: features_retrieve
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        description: A unique integer value identifying this feature.
+        required: true
+      tags:
+      - features
+      security:
+      - basicAuth: []
+      - cookieAuth: []
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Feature'
+          description: ''
+  /find-my-combos:
+    get:
+      operationId: find_my_combos_list
+      parameters:
+      - name: count
+        required: false
+        in: query
+        description: Set to true to enable count query. If false, count will be omitted.
+        schema:
+          type: boolean
+          default: false
+      - name: groupByCombo
+        required: false
+        in: query
+        description: Group variants by combo
+        schema:
+          type: boolean
+      - name: limit
+        required: false
+        in: query
+        description: Number of results to return per page.
+        schema:
+          type: integer
+      - name: offset
+        required: false
+        in: query
+        description: The initial index from which to return the results.
+        schema:
+          type: integer
+      - name: ordering
+        required: false
+        in: query
+        description: Which field to use when ordering the results.
+        schema:
+          type: string
+      - name: q
+        required: false
+        in: query
+        description: A search query.
+        schema:
+          type: string
+      - in: query
+        name: variant
+        schema:
+          type: string
+        description: Filters for variants of the same combos that generated the given
+          variant id.
+      tags:
+      - find-my-combos
+      security:
+      - basicAuth: []
+      - cookieAuth: []
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PaginatedFindMyCombosResponseList'
+          description: ''
+    post:
+      operationId: find_my_combos_create
+      parameters:
+      - name: count
+        required: false
+        in: query
+        description: Set to true to enable count query. If false, count will be omitted.
+        schema:
+          type: boolean
+          default: false
+      - name: groupByCombo
+        required: false
+        in: query
+        description: Group variants by combo
+        schema:
+          type: boolean
+      - name: limit
+        required: false
+        in: query
+        description: Number of results to return per page.
+        schema:
+          type: integer
+      - name: offset
+        required: false
+        in: query
+        description: The initial index from which to return the results.
+        schema:
+          type: integer
+      - name: ordering
+        required: false
+        in: query
+        description: Which field to use when ordering the results.
+        schema:
+          type: string
+      - name: q
+        required: false
+        in: query
+        description: A search query.
+        schema:
+          type: string
+      - in: query
+        name: variant
+        schema:
+          type: string
+        description: Filters for variants of the same combos that generated the given
+          variant id.
+      tags:
+      - find-my-combos
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/DeckRequest'
+          text/plain:
+            schema:
+              type: string
+      security:
+      - basicAuth: []
+      - cookieAuth: []
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PaginatedFindMyCombosResponseList'
+          description: ''
+  /properties/:
+    get:
+      operationId: properties_list
+      parameters:
+      - name: count
+        required: false
+        in: query
+        description: Set to true to enable count query. If false, count will be omitted.
+        schema:
+          type: boolean
+          default: false
+      - name: limit
+        required: false
+        in: query
+        description: Number of results to return per page.
+        schema:
+          type: integer
+      - name: offset
+        required: false
+        in: query
+        description: The initial index from which to return the results.
+        schema:
+          type: integer
+      tags:
+      - properties
+      security:
+      - basicAuth: []
+      - cookieAuth: []
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PaginatedWebsitePropertyList'
+          description: ''
+  /properties/{key}/:
+    get:
+      operationId: properties_retrieve
+      parameters:
+      - in: path
+        name: key
+        schema:
+          type: string
+        description: A unique value identifying this Website Property.
+        required: true
+      tags:
+      - properties
+      security:
+      - basicAuth: []
+      - cookieAuth: []
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/WebsiteProperty'
+          description: ''
+  /templates/:
+    get:
+      operationId: templates_list
+      parameters:
+      - name: count
+        required: false
+        in: query
+        description: Set to true to enable count query. If false, count will be omitted.
+        schema:
+          type: boolean
+          default: false
+      - name: limit
+        required: false
+        in: query
+        description: Number of results to return per page.
+        schema:
+          type: integer
+      - name: offset
+        required: false
+        in: query
+        description: The initial index from which to return the results.
+        schema:
+          type: integer
+      - name: q
+        required: false
+        in: query
+        description: A search query.
+        schema:
+          type: string
+      tags:
+      - templates
+      security:
+      - basicAuth: []
+      - cookieAuth: []
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PaginatedTemplateList'
+          description: ''
+  /templates/{id}/:
+    get:
+      operationId: templates_retrieve
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        description: A unique integer value identifying this card template.
+        required: true
+      tags:
+      - templates
+      security:
+      - basicAuth: []
+      - cookieAuth: []
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Template'
+          description: ''
+  /token/:
+    post:
+      operationId: token_create
+      description: |-
+        Takes a set of user credentials and returns an access and refresh JSON web
+        token pair to prove the authentication of those credentials.
+      tags:
+      - token
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/TokenObtainPairRequest'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/TokenObtainPairRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/TokenObtainPairRequest'
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/TokenObtainPair'
+          description: ''
+  /token/refresh/:
+    post:
+      operationId: token_refresh_create
+      description: |-
+        Takes a refresh type JSON web token and returns an access type JSON web
+        token if the refresh token is valid.
+      tags:
+      - token
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/TokenRefreshRequest'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/TokenRefreshRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/TokenRefreshRequest'
+        required: true
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/TokenRefresh'
+          description: ''
+  /token/verify/:
+    post:
+      operationId: token_verify_create
+      description: |-
+        Takes a token and indicates if it is valid.  This view provides no
+        information about a token's fitness for a particular use.
+      tags:
+      - token
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/TokenVerifyRequest'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/TokenVerifyRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/TokenVerifyRequest'
+        required: true
+      responses:
+        '200':
+          description: No response body
+  /users/:
+    get:
+      operationId: users_list
+      parameters:
+      - name: count
+        required: false
+        in: query
+        description: Set to true to enable count query. If false, count will be omitted.
+        schema:
+          type: boolean
+          default: false
+      - name: limit
+        required: false
+        in: query
+        description: Number of results to return per page.
+        schema:
+          type: integer
+      - name: offset
+        required: false
+        in: query
+        description: The initial index from which to return the results.
+        schema:
+          type: integer
+      tags:
+      - users
+      security:
+      - basicAuth: []
+      - cookieAuth: []
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PaginatedUserDetailList'
+          description: ''
+  /users/{id}/:
+    get:
+      operationId: users_retrieve
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        description: A unique integer value identifying this user.
+        required: true
+      tags:
+      - users
+      security:
+      - basicAuth: []
+      - cookieAuth: []
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UserDetail'
+          description: ''
+    put:
+      operationId: users_update
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        description: A unique integer value identifying this user.
+        required: true
+      tags:
+      - users
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UserDetailRequest'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/UserDetailRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/UserDetailRequest'
+        required: true
+      security:
+      - basicAuth: []
+      - cookieAuth: []
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UserDetail'
+          description: ''
+    patch:
+      operationId: users_partial_update
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        description: A unique integer value identifying this user.
+        required: true
+      tags:
+      - users
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PatchedUserDetailRequest'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/PatchedUserDetailRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/PatchedUserDetailRequest'
+      security:
+      - basicAuth: []
+      - cookieAuth: []
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UserDetail'
+          description: ''
+    delete:
+      operationId: users_destroy
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        description: A unique integer value identifying this user.
+        required: true
+      tags:
+      - users
+      security:
+      - basicAuth: []
+      - cookieAuth: []
+      - jwtAuth: []
+      responses:
+        '204':
+          description: No response body
+  /variant-aliases/:
+    get:
+      operationId: variant_aliases_list
+      parameters:
+      - name: count
+        required: false
+        in: query
+        description: Set to true to enable count query. If false, count will be omitted.
+        schema:
+          type: boolean
+          default: false
+      - name: limit
+        required: false
+        in: query
+        description: Number of results to return per page.
+        schema:
+          type: integer
+      - name: offset
+        required: false
+        in: query
+        description: The initial index from which to return the results.
+        schema:
+          type: integer
+      tags:
+      - variant-aliases
+      security:
+      - basicAuth: []
+      - cookieAuth: []
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PaginatedVariantAliasList'
+          description: ''
+  /variant-aliases/{id}/:
+    get:
+      operationId: variant_aliases_retrieve
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: string
+          description: Unique id of this variant alias
+        required: true
+      tags:
+      - variant-aliases
+      security:
+      - basicAuth: []
+      - cookieAuth: []
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/VariantAlias'
+          description: ''
+  /variant-suggestions/:
+    get:
+      operationId: variant_suggestions_list
+      parameters:
+      - name: count
+        required: false
+        in: query
+        description: Set to true to enable count query. If false, count will be omitted.
+        schema:
+          type: boolean
+          default: false
+      - name: limit
+        required: false
+        in: query
+        description: Number of results to return per page.
+        schema:
+          type: integer
+      - name: offset
+        required: false
+        in: query
+        description: The initial index from which to return the results.
+        schema:
+          type: integer
+      - in: query
+        name: suggestedBy
+        schema:
+          type: integer
+      tags:
+      - variant-suggestions
+      security:
+      - basicAuth: []
+      - cookieAuth: []
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PaginatedVariantSuggestionList'
+          description: ''
+    post:
+      operationId: variant_suggestions_create
+      tags:
+      - variant-suggestions
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/VariantSuggestionRequest'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/VariantSuggestionRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/VariantSuggestionRequest'
+        required: true
+      security:
+      - basicAuth: []
+      - cookieAuth: []
+      - jwtAuth: []
+      responses:
+        '201':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/VariantSuggestion'
+          description: ''
+  /variant-suggestions/{id}/:
+    get:
+      operationId: variant_suggestions_retrieve
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        description: A unique integer value identifying this variant suggestion.
+        required: true
+      tags:
+      - variant-suggestions
+      security:
+      - basicAuth: []
+      - cookieAuth: []
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/VariantSuggestion'
+          description: ''
+    put:
+      operationId: variant_suggestions_update
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        description: A unique integer value identifying this variant suggestion.
+        required: true
+      tags:
+      - variant-suggestions
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/VariantSuggestionRequest'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/VariantSuggestionRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/VariantSuggestionRequest'
+        required: true
+      security:
+      - basicAuth: []
+      - cookieAuth: []
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/VariantSuggestion'
+          description: ''
+    patch:
+      operationId: variant_suggestions_partial_update
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        description: A unique integer value identifying this variant suggestion.
+        required: true
+      tags:
+      - variant-suggestions
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PatchedVariantSuggestionRequest'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/PatchedVariantSuggestionRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/PatchedVariantSuggestionRequest'
+      security:
+      - basicAuth: []
+      - cookieAuth: []
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/VariantSuggestion'
+          description: ''
+    delete:
+      operationId: variant_suggestions_destroy
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        description: A unique integer value identifying this variant suggestion.
+        required: true
+      tags:
+      - variant-suggestions
+      security:
+      - basicAuth: []
+      - cookieAuth: []
+      - jwtAuth: []
+      responses:
+        '204':
+          description: No response body
+  /variant-suggestions/{id}/validate/:
+    put:
+      operationId: variant_suggestions_validate_update
+      description: Validate the variant suggestion update data.
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        description: A unique integer value identifying this variant suggestion.
+        required: true
+      tags:
+      - variant-suggestions
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/VariantSuggestionRequest'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/VariantSuggestionRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/VariantSuggestionRequest'
+        required: true
+      security:
+      - basicAuth: []
+      - cookieAuth: []
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/VariantSuggestion'
+          description: ''
+    patch:
+      operationId: variant_suggestions_validate_partial_update
+      description: Validate the variant suggestion update data.
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        description: A unique integer value identifying this variant suggestion.
+        required: true
+      tags:
+      - variant-suggestions
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PatchedVariantSuggestionRequest'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/PatchedVariantSuggestionRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/PatchedVariantSuggestionRequest'
+      security:
+      - basicAuth: []
+      - cookieAuth: []
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/VariantSuggestion'
+          description: ''
+  /variant-suggestions/validate/:
+    post:
+      operationId: variant_suggestions_validate_create
+      description: Validate the variant suggestion data.
+      tags:
+      - variant-suggestions
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/VariantSuggestionRequest'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/VariantSuggestionRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/VariantSuggestionRequest'
+        required: true
+      security:
+      - basicAuth: []
+      - cookieAuth: []
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/VariantSuggestion'
+          description: ''
+  /variant-update-suggestions/:
+    get:
+      operationId: variant_update_suggestions_list
+      parameters:
+      - name: count
+        required: false
+        in: query
+        description: Set to true to enable count query. If false, count will be omitted.
+        schema:
+          type: boolean
+          default: false
+      - name: limit
+        required: false
+        in: query
+        description: Number of results to return per page.
+        schema:
+          type: integer
+      - name: offset
+        required: false
+        in: query
+        description: The initial index from which to return the results.
+        schema:
+          type: integer
+      - in: query
+        name: suggestedBy
+        schema:
+          type: integer
+      tags:
+      - variant-update-suggestions
+      security:
+      - basicAuth: []
+      - cookieAuth: []
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PaginatedVariantUpdateSuggestionList'
+          description: ''
+    post:
+      operationId: variant_update_suggestions_create
+      tags:
+      - variant-update-suggestions
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/VariantUpdateSuggestionRequest'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/VariantUpdateSuggestionRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/VariantUpdateSuggestionRequest'
+        required: true
+      security:
+      - basicAuth: []
+      - cookieAuth: []
+      - jwtAuth: []
+      responses:
+        '201':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/VariantUpdateSuggestion'
+          description: ''
+  /variant-update-suggestions/{id}/:
+    get:
+      operationId: variant_update_suggestions_retrieve
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        description: A unique integer value identifying this variant update suggestion.
+        required: true
+      tags:
+      - variant-update-suggestions
+      security:
+      - basicAuth: []
+      - cookieAuth: []
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/VariantUpdateSuggestion'
+          description: ''
+    put:
+      operationId: variant_update_suggestions_update
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        description: A unique integer value identifying this variant update suggestion.
+        required: true
+      tags:
+      - variant-update-suggestions
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/VariantUpdateSuggestionRequest'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/VariantUpdateSuggestionRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/VariantUpdateSuggestionRequest'
+        required: true
+      security:
+      - basicAuth: []
+      - cookieAuth: []
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/VariantUpdateSuggestion'
+          description: ''
+    patch:
+      operationId: variant_update_suggestions_partial_update
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        description: A unique integer value identifying this variant update suggestion.
+        required: true
+      tags:
+      - variant-update-suggestions
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PatchedVariantUpdateSuggestionRequest'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/PatchedVariantUpdateSuggestionRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/PatchedVariantUpdateSuggestionRequest'
+      security:
+      - basicAuth: []
+      - cookieAuth: []
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/VariantUpdateSuggestion'
+          description: ''
+    delete:
+      operationId: variant_update_suggestions_destroy
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        description: A unique integer value identifying this variant update suggestion.
+        required: true
+      tags:
+      - variant-update-suggestions
+      security:
+      - basicAuth: []
+      - cookieAuth: []
+      - jwtAuth: []
+      responses:
+        '204':
+          description: No response body
+  /variant-update-suggestions/{id}/validate/:
+    put:
+      operationId: variant_update_suggestions_validate_update
+      description: Validate the variant suggestion update data.
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        description: A unique integer value identifying this variant update suggestion.
+        required: true
+      tags:
+      - variant-update-suggestions
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/VariantUpdateSuggestionRequest'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/VariantUpdateSuggestionRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/VariantUpdateSuggestionRequest'
+        required: true
+      security:
+      - basicAuth: []
+      - cookieAuth: []
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/VariantUpdateSuggestion'
+          description: ''
+    patch:
+      operationId: variant_update_suggestions_validate_partial_update
+      description: Validate the variant suggestion update data.
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        description: A unique integer value identifying this variant update suggestion.
+        required: true
+      tags:
+      - variant-update-suggestions
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PatchedVariantUpdateSuggestionRequest'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/PatchedVariantUpdateSuggestionRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/PatchedVariantUpdateSuggestionRequest'
+      security:
+      - basicAuth: []
+      - cookieAuth: []
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/VariantUpdateSuggestion'
+          description: ''
+  /variant-update-suggestions/validate/:
+    post:
+      operationId: variant_update_suggestions_validate_create
+      description: Validate the variant suggestion data.
+      tags:
+      - variant-update-suggestions
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/VariantUpdateSuggestionRequest'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/VariantUpdateSuggestionRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/VariantUpdateSuggestionRequest'
+        required: true
+      security:
+      - basicAuth: []
+      - cookieAuth: []
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/VariantUpdateSuggestion'
+          description: ''
+  /variants/:
+    get:
+      operationId: variants_list
+      parameters:
+      - name: count
+        required: false
+        in: query
+        description: Set to true to enable count query. If false, count will be omitted.
+        schema:
+          type: boolean
+          default: false
+      - name: groupByCombo
+        required: false
+        in: query
+        description: Group variants by combo
+        schema:
+          type: boolean
+      - name: limit
+        required: false
+        in: query
+        description: Number of results to return per page.
+        schema:
+          type: integer
+      - name: offset
+        required: false
+        in: query
+        description: The initial index from which to return the results.
+        schema:
+          type: integer
+      - name: ordering
+        required: false
+        in: query
+        description: Which field to use when ordering the results.
+        schema:
+          type: string
+      - name: q
+        required: false
+        in: query
+        description: A search query.
+        schema:
+          type: string
+      - in: query
+        name: variant
+        schema:
+          type: string
+        description: Filters for variants of the same combos that generated the given
+          variant id.
+      tags:
+      - variants
+      security:
+      - basicAuth: []
+      - cookieAuth: []
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PaginatedVariantList'
+          description: ''
+        '400':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/VariantsQueryValidationError'
+          description: ''
+  /variants/{id}/:
+    get:
+      operationId: variants_retrieve
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: string
+          description: Unique ID for this variant
+        required: true
+      tags:
+      - variants
+      security:
+      - basicAuth: []
+      - cookieAuth: []
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Variant'
+          description: ''
+        '400':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/VariantsQueryValidationError'
+          description: ''
+components:
+  schemas:
+    BracketTagEnum:
+      enum:
+      - R
+      - S
+      - P
+      - O
+      - C
+      - E
+      - B
+      type: string
+      description: |-
+        * `R` - Ruthless
+        * `S` - Spicy
+        * `P` - Powerful
+        * `O` - Oddball
+        * `C` - Core
+        * `E` - Exhibition
+        * `B` - Banned
+    Card:
+      type: object
+      properties:
+        id:
+          type: integer
+          readOnly: true
+        name:
+          type: string
+          title: Name of card
+          maxLength: 255
+        oracleId:
+          type: string
+          format: uuid
+          nullable: true
+          title: Scryfall Oracle ID of card
+        spoiler:
+          type: boolean
+          title: Is spoiler
+          description: Is this from an upcoming set?
+        typeLine:
+          type: string
+          title: Type line of card
+          maxLength: 255
+        imageUriFrontPng:
+          type: string
+          format: uri
+          nullable: true
+          title: Image URI of the front of the card in PNG format
+          maxLength: 200
+        imageUriFrontLarge:
+          type: string
+          format: uri
+          nullable: true
+          title: Image URI of the front of the card in large format
+          maxLength: 200
+        imageUriFrontNormal:
+          type: string
+          format: uri
+          nullable: true
+          title: Image URI of the front of the card in normal format
+          maxLength: 200
+        imageUriFrontSmall:
+          type: string
+          format: uri
+          nullable: true
+          title: Image URI of the front of the card in small format
+          maxLength: 200
+        imageUriFrontArtCrop:
+          type: string
+          format: uri
+          nullable: true
+          title: Image URI of the card art crop
+          maxLength: 200
+        layoutRotationFront:
+          allOf:
+          - $ref: '#/components/schemas/LayoutRotationEnum'
+          nullable: true
+          title: Layout rotation of the front of the card
+        imageUriBackPng:
+          type: string
+          format: uri
+          nullable: true
+          title: Image URI of the back of the card in PNG format
+          maxLength: 200
+        imageUriBackLarge:
+          type: string
+          format: uri
+          nullable: true
+          title: Image URI of the back of the card in large format
+          maxLength: 200
+        imageUriBackNormal:
+          type: string
+          format: uri
+          nullable: true
+          title: Image URI of the back of the card in normal format
+          maxLength: 200
+        imageUriBackSmall:
+          type: string
+          format: uri
+          nullable: true
+          title: Image URI of the back of the card in small format
+          maxLength: 200
+        imageUriBackArtCrop:
+          type: string
+          format: uri
+          nullable: true
+          title: Image URI of the back of the card art crop
+          maxLength: 200
+      required:
+      - id
+      - imageUriBackArtCrop
+      - imageUriBackLarge
+      - imageUriBackNormal
+      - imageUriBackPng
+      - imageUriBackSmall
+      - imageUriFrontArtCrop
+      - imageUriFrontLarge
+      - imageUriFrontNormal
+      - imageUriFrontPng
+      - imageUriFrontSmall
+      - layoutRotationFront
+      - name
+      - oracleId
+      - spoiler
+      - typeLine
+    CardDetail:
+      type: object
+      properties:
+        id:
+          type: integer
+          readOnly: true
+        name:
+          type: string
+          title: Name of card
+          maxLength: 255
+        oracleId:
+          type: string
+          format: uuid
+          nullable: true
+          title: Scryfall Oracle ID of card
+        identity:
+          allOf:
+          - $ref: '#/components/schemas/ColorEnum'
+          title: Color identity
+        variantCount:
+          type: integer
+          readOnly: true
+        color:
+          allOf:
+          - $ref: '#/components/schemas/ColorEnum'
+          title: Colors
+        spoiler:
+          type: boolean
+          title: Is spoiler
+          description: Is this from an upcoming set?
+        typeLine:
+          type: string
+          title: Type line of card
+          maxLength: 255
+        oracleText:
+          type: string
+          title: Oracle text of card
+        keywords:
+          title: Oracle keywords of card
+        manaValue:
+          type: integer
+          maximum: 32767
+          minimum: 0
+        reserved:
+          type: boolean
+          title: Reserved list card
+          description: Whether this card is part of the Reserved List
+        latestPrintingSet:
+          type: string
+          title: Latest printing set of card
+          description: Set code of latest printing of card
+          maxLength: 10
+        reprinted:
+          type: boolean
+          title: Reprinted card
+          description: Whether this card has been reprinted
+        gameChanger:
+          type: boolean
+          title: Game changer card
+          description: Whether this card is in the official Game Changer card list
+        tutor:
+          type: boolean
+          title: Tutor card
+          description: Whether this card can tutor for other cards
+        massLandDenial:
+          type: boolean
+          title: Mass land denial card
+          description: Whether this card can inhibit or destroy numerous lands
+        extraTurn:
+          type: boolean
+          title: Extra turn card
+          description: Whether this card grants an extra turn
+        imageUriFrontPng:
+          type: string
+          format: uri
+          nullable: true
+          title: Image URI of the front of the card in PNG format
+          maxLength: 200
+        imageUriFrontLarge:
+          type: string
+          format: uri
+          nullable: true
+          title: Image URI of the front of the card in large format
+          maxLength: 200
+        imageUriFrontNormal:
+          type: string
+          format: uri
+          nullable: true
+          title: Image URI of the front of the card in normal format
+          maxLength: 200
+        imageUriFrontSmall:
+          type: string
+          format: uri
+          nullable: true
+          title: Image URI of the front of the card in small format
+          maxLength: 200
+        imageUriFrontArtCrop:
+          type: string
+          format: uri
+          nullable: true
+          title: Image URI of the card art crop
+          maxLength: 200
+        layoutRotationFront:
+          allOf:
+          - $ref: '#/components/schemas/LayoutRotationEnum'
+          nullable: true
+          title: Layout rotation of the front of the card
+        imageUriBackPng:
+          type: string
+          format: uri
+          nullable: true
+          title: Image URI of the back of the card in PNG format
+          maxLength: 200
+        imageUriBackLarge:
+          type: string
+          format: uri
+          nullable: true
+          title: Image URI of the back of the card in large format
+          maxLength: 200
+        imageUriBackNormal:
+          type: string
+          format: uri
+          nullable: true
+          title: Image URI of the back of the card in normal format
+          maxLength: 200
+        imageUriBackSmall:
+          type: string
+          format: uri
+          nullable: true
+          title: Image URI of the back of the card in small format
+          maxLength: 200
+        imageUriBackArtCrop:
+          type: string
+          format: uri
+          nullable: true
+          title: Image URI of the back of the card art crop
+          maxLength: 200
+        features:
+          type: array
+          items:
+            $ref: '#/components/schemas/FeatureOfCard'
+          readOnly: true
+        legalities:
+          allOf:
+          - $ref: '#/components/schemas/CardLegalities'
+          readOnly: true
+        prices:
+          allOf:
+          - $ref: '#/components/schemas/CardPrices'
+          readOnly: true
+      required:
+      - color
+      - extraTurn
+      - features
+      - gameChanger
+      - id
+      - identity
+      - imageUriBackArtCrop
+      - imageUriBackLarge
+      - imageUriBackNormal
+      - imageUriBackPng
+      - imageUriBackSmall
+      - imageUriFrontArtCrop
+      - imageUriFrontLarge
+      - imageUriFrontNormal
+      - imageUriFrontPng
+      - imageUriFrontSmall
+      - keywords
+      - latestPrintingSet
+      - layoutRotationFront
+      - legalities
+      - manaValue
+      - massLandDenial
+      - name
+      - oracleId
+      - oracleText
+      - prices
+      - reprinted
+      - reserved
+      - spoiler
+      - tutor
+      - typeLine
+      - variantCount
+    CardInDeck:
+      type: object
+      properties:
+        card:
+          type: string
+          maxLength: 256
+        quantity:
+          type: integer
+          minimum: 1
+          default: 1
+      required:
+      - card
+      - quantity
+    CardInDeckRequest:
+      type: object
+      properties:
+        card:
+          type: string
+          maxLength: 256
+        quantity:
+          type: integer
+          minimum: 1
+          default: 1
+      required:
+      - card
+    CardInVariant:
+      type: object
+      properties:
+        card:
+          allOf:
+          - $ref: '#/components/schemas/Card'
+          readOnly: true
+        zoneLocations:
+          type: array
+          items:
+            type: string
+          readOnly: true
+        battlefieldCardState:
+          type: string
+          readOnly: true
+        exileCardState:
+          type: string
+          readOnly: true
+        libraryCardState:
+          type: string
+          readOnly: true
+        graveyardCardState:
+          type: string
+          readOnly: true
+        mustBeCommander:
+          type: boolean
+          readOnly: true
+        quantity:
+          type: integer
+          maximum: 32767
+          minimum: 1
+          description: Quantity of the card in the combo.
+      required:
+      - battlefieldCardState
+      - card
+      - exileCardState
+      - graveyardCardState
+      - libraryCardState
+      - mustBeCommander
+      - quantity
+      - zoneLocations
+    CardLegalities:
+      type: object
+      properties:
+        commander:
+          type: boolean
+        pauperCommanderMain:
+          type: boolean
+        pauperCommander:
+          type: boolean
+        oathbreaker:
+          type: boolean
+        predh:
+          type: boolean
+        brawl:
+          type: boolean
+        vintage:
+          type: boolean
+        legacy:
+          type: boolean
+        premodern:
+          type: boolean
+        modern:
+          type: boolean
+        pioneer:
+          type: boolean
+        standard:
+          type: boolean
+        pauper:
+          type: boolean
+      required:
+      - brawl
+      - commander
+      - legacy
+      - modern
+      - oathbreaker
+      - pauper
+      - pauperCommander
+      - pauperCommanderMain
+      - pioneer
+      - predh
+      - premodern
+      - standard
+      - vintage
+    CardPrices:
+      type: object
+      properties:
+        tcgplayer:
+          type: string
+          format: decimal
+          pattern: ^-?\d{0,8}(?:\.\d{0,2})?$
+        cardkingdom:
+          type: string
+          format: decimal
+          pattern: ^-?\d{0,8}(?:\.\d{0,2})?$
+        cardmarket:
+          type: string
+          format: decimal
+          pattern: ^-?\d{0,8}(?:\.\d{0,2})?$
+      required:
+      - cardkingdom
+      - cardmarket
+      - tcgplayer
+    CardUsedInVariantSuggestion:
+      type: object
+      properties:
+        card:
+          type: string
+          title: Card name
+          description: Card name
+          pattern: '[-a-zA-Z0-9@:%._\+~#=]{1,256}\.[a-zA-Z0-9()]{2,6}\b([-a-zA-Z0-9()@:%_\+.~#?&//=]*)'
+          maxLength: 255
+        quantity:
+          type: integer
+          maximum: 32767
+          minimum: 1
+          description: Quantity of the card in the combo.
+        zoneLocations:
+          type: array
+          items:
+            $ref: '#/components/schemas/ZoneLocationsEnum'
+        battlefieldCardState:
+          type: string
+          title: Battlefield starting card state
+          description: State of the card on the battlefield, if present.
+          pattern: ^(?:[^\[]*(?:\[(?!\[)|\[{2}[^\[]+\]{2}|\[{3,}))*[^\[]*$
+          maxLength: 512
+        exileCardState:
+          type: string
+          title: Exile starting card state
+          description: State of the card in exile, if present.
+          pattern: ^(?:[^\[]*(?:\[(?!\[)|\[{2}[^\[]+\]{2}|\[{3,}))*[^\[]*$
+          maxLength: 512
+        libraryCardState:
+          type: string
+          title: Library starting card state
+          description: State of the card in the library, if present.
+          pattern: ^(?:[^\[]*(?:\[(?!\[)|\[{2}[^\[]+\]{2}|\[{3,}))*[^\[]*$
+          maxLength: 512
+        graveyardCardState:
+          type: string
+          title: Graveyard starting card state
+          description: State of the card in the graveyard, if present.
+          pattern: ^(?:[^\[]*(?:\[(?!\[)|\[{2}[^\[]+\]{2}|\[{3,}))*[^\[]*$
+          maxLength: 512
+        mustBeCommander:
+          type: boolean
+          description: Does the card have to be a commander?
+      required:
+      - battlefieldCardState
+      - card
+      - exileCardState
+      - graveyardCardState
+      - libraryCardState
+      - mustBeCommander
+      - quantity
+      - zoneLocations
+    CardUsedInVariantSuggestionRequest:
+      type: object
+      properties:
+        card:
+          type: string
+          minLength: 1
+          title: Card name
+          description: Card name
+          pattern: '[-a-zA-Z0-9@:%._\+~#=]{1,256}\.[a-zA-Z0-9()]{2,6}\b([-a-zA-Z0-9()@:%_\+.~#?&//=]*)'
+          maxLength: 255
+        quantity:
+          type: integer
+          maximum: 32767
+          minimum: 1
+          description: Quantity of the card in the combo.
+        zoneLocations:
+          type: array
+          items:
+            $ref: '#/components/schemas/ZoneLocationsEnum'
+        battlefieldCardState:
+          type: string
+          title: Battlefield starting card state
+          description: State of the card on the battlefield, if present.
+          pattern: ^(?:[^\[]*(?:\[(?!\[)|\[{2}[^\[]+\]{2}|\[{3,}))*[^\[]*$
+          maxLength: 512
+        exileCardState:
+          type: string
+          title: Exile starting card state
+          description: State of the card in exile, if present.
+          pattern: ^(?:[^\[]*(?:\[(?!\[)|\[{2}[^\[]+\]{2}|\[{3,}))*[^\[]*$
+          maxLength: 512
+        libraryCardState:
+          type: string
+          title: Library starting card state
+          description: State of the card in the library, if present.
+          pattern: ^(?:[^\[]*(?:\[(?!\[)|\[{2}[^\[]+\]{2}|\[{3,}))*[^\[]*$
+          maxLength: 512
+        graveyardCardState:
+          type: string
+          title: Graveyard starting card state
+          description: State of the card in the graveyard, if present.
+          pattern: ^(?:[^\[]*(?:\[(?!\[)|\[{2}[^\[]+\]{2}|\[{3,}))*[^\[]*$
+          maxLength: 512
+        mustBeCommander:
+          type: boolean
+          description: Does the card have to be a commander?
+      required:
+      - card
+      - zoneLocations
+    ClassifiedCard:
+      type: object
+      properties:
+        card:
+          $ref: '#/components/schemas/Card'
+        quantity:
+          type: integer
+        banned:
+          type: boolean
+        gameChanger:
+          type: boolean
+        massLandDenial:
+          type: boolean
+        extraTurn:
+          type: boolean
+      required:
+      - banned
+      - card
+      - extraTurn
+      - gameChanger
+      - massLandDenial
+      - quantity
+    ClassifiedTemplate:
+      type: object
+      properties:
+        template:
+          $ref: '#/components/schemas/Template'
+        quantity:
+          type: integer
+        massLandDenial:
+          type: boolean
+        extraTurn:
+          type: boolean
+      required:
+      - extraTurn
+      - massLandDenial
+      - quantity
+      - template
+    ClassifiedVariant:
+      type: object
+      properties:
+        combo:
+          $ref: '#/components/schemas/Variant'
+        relevant:
+          type: boolean
+        borderlineRelevant:
+          type: boolean
+        arguablyTwoCard:
+          type: boolean
+        definitelyTwoCard:
+          type: boolean
+        speed:
+          type: integer
+        massLandDenial:
+          type: boolean
+        extraTurn:
+          type: boolean
+        lock:
+          type: boolean
+        skipTurns:
+          type: boolean
+        controlAllOpponents:
+          type: boolean
+        controlSomeOpponents:
+          type: boolean
+      required:
+      - arguablyTwoCard
+      - borderlineRelevant
+      - combo
+      - controlAllOpponents
+      - controlSomeOpponents
+      - definitelyTwoCard
+      - extraTurn
+      - lock
+      - massLandDenial
+      - relevant
+      - skipTurns
+      - speed
+    ColorEnum:
+      enum:
+      - C
+      - W
+      - U
+      - B
+      - R
+      - G
+      - WU
+      - WB
+      - RW
+      - GW
+      - UB
+      - UR
+      - GU
+      - BR
+      - BG
+      - RG
+      - WUB
+      - URW
+      - GWU
+      - RWB
+      - WBG
+      - RGW
+      - UBR
+      - BGU
+      - GUR
+      - BRG
+      - WUBR
+      - UBRG
+      - BRGW
+      - RGWU
+      - GWUB
+      - WUBRG
+      type: string
+      description: |-
+        * `C` - C
+        * `W` - W
+        * `U` - U
+        * `B` - B
+        * `R` - R
+        * `G` - G
+        * `WU` - WU
+        * `WB` - WB
+        * `RW` - RW
+        * `GW` - GW
+        * `UB` - UB
+        * `UR` - UR
+        * `GU` - GU
+        * `BR` - BR
+        * `BG` - BG
+        * `RG` - RG
+        * `WUB` - WUB
+        * `URW` - URW
+        * `GWU` - GWU
+        * `RWB` - RWB
+        * `WBG` - WBG
+        * `RGW` - RGW
+        * `UBR` - UBR
+        * `BGU` - BGU
+        * `GUR` - GUR
+        * `BRG` - BRG
+        * `WUBR` - WUBR
+        * `UBRG` - UBRG
+        * `BRGW` - BRGW
+        * `RGWU` - RGWU
+        * `GWUB` - GWUB
+        * `WUBRG` - WUBRG
+    Combo:
+      type: object
+      properties:
+        id:
+          type: integer
+          readOnly: true
+      required:
+      - id
+    Deck:
+      type: object
+      properties:
+        main:
+          type: array
+          items:
+            $ref: '#/components/schemas/CardInDeck'
+          maxItems: 600
+        commanders:
+          type: array
+          items:
+            $ref: '#/components/schemas/CardInDeck'
+          maxItems: 12
+      required:
+      - commanders
+      - main
+    DeckRequest:
+      type: object
+      properties:
+        main:
+          type: array
+          items:
+            $ref: '#/components/schemas/CardInDeckRequest'
+          maxItems: 600
+        commanders:
+          type: array
+          items:
+            $ref: '#/components/schemas/CardInDeckRequest'
+          maxItems: 12
+    EstimateBracketResult:
+      type: object
+      properties:
+        bracketTag:
+          $ref: '#/components/schemas/BracketTagEnum'
+        cards:
+          type: array
+          items:
+            $ref: '#/components/schemas/ClassifiedCard'
+        templates:
+          type: array
+          items:
+            $ref: '#/components/schemas/ClassifiedTemplate'
+        combos:
+          type: array
+          items:
+            $ref: '#/components/schemas/ClassifiedVariant'
+      required:
+      - bracketTag
+      - cards
+      - combos
+      - templates
+    Feature:
+      type: object
+      properties:
+        id:
+          type: integer
+          readOnly: true
+        name:
+          type: string
+          title: Name of feature
+          description: Short name for a produced effect
+          pattern: ^[A-Z]
+          maxLength: 255
+        uncountable:
+          type: boolean
+          title: Is uncountable
+          description: Is this an uncountable feature? Uncountable features can only
+            appear in one copy and speed up variant generation.
+        status:
+          allOf:
+          - $ref: '#/components/schemas/FeatureStatusEnum'
+          description: |-
+            Is this feature an utility for variant generation, a helper to be exploited somehow, or a standalone, probably impactful effect? (public utilities are visible to combo submitters)
+
+            * `HU` - Hidden Utility
+            * `PU` - Public Utility
+            * `H` - Helper
+            * `C` - Contextual
+            * `S` - Standalone
+      required:
+      - id
+      - name
+      - status
+      - uncountable
+    FeatureOfCard:
+      type: object
+      properties:
+        id:
+          type: integer
+          readOnly: true
+        feature:
+          allOf:
+          - $ref: '#/components/schemas/Feature'
+          readOnly: true
+        quantity:
+          type: integer
+          maximum: 32767
+          minimum: 1
+          description: Quantity of the card in the combo.
+        zoneLocations:
+          type: array
+          items:
+            type: string
+          readOnly: true
+        battlefieldCardState:
+          type: string
+          title: Battlefield starting card state
+          description: State of the card on the battlefield, if present.
+          pattern: ^(?:[^\[]*(?:\[(?!\[)|\[{2}[^\[]+\]{2}|\[{3,}))*[^\[]*$
+          maxLength: 512
+        exileCardState:
+          type: string
+          title: Exile starting card state
+          description: State of the card in exile, if present.
+          pattern: ^(?:[^\[]*(?:\[(?!\[)|\[{2}[^\[]+\]{2}|\[{3,}))*[^\[]*$
+          maxLength: 512
+        libraryCardState:
+          type: string
+          title: Library starting card state
+          description: State of the card in the library, if present.
+          pattern: ^(?:[^\[]*(?:\[(?!\[)|\[{2}[^\[]+\]{2}|\[{3,}))*[^\[]*$
+          maxLength: 512
+        graveyardCardState:
+          type: string
+          title: Graveyard starting card state
+          description: State of the card in the graveyard, if present.
+          pattern: ^(?:[^\[]*(?:\[(?!\[)|\[{2}[^\[]+\]{2}|\[{3,}))*[^\[]*$
+          maxLength: 512
+        mustBeCommander:
+          type: boolean
+          description: Does the card have to be a commander?
+      required:
+      - battlefieldCardState
+      - exileCardState
+      - feature
+      - graveyardCardState
+      - id
+      - libraryCardState
+      - mustBeCommander
+      - quantity
+      - zoneLocations
+    FeatureProducedByVariant:
+      type: object
+      properties:
+        feature:
+          allOf:
+          - $ref: '#/components/schemas/Feature'
+          readOnly: true
+        quantity:
+          type: integer
+          maximum: 32767
+          minimum: 1
+          description: Quantity of the feature produced by the variant.
+      required:
+      - feature
+      - quantity
+    FeatureProducedInVariantSuggestion:
+      type: object
+      properties:
+        feature:
+          type: string
+          title: Feature name
+          description: Feature name
+          pattern: ^[A-Z]
+          maxLength: 255
+      required:
+      - feature
+    FeatureProducedInVariantSuggestionRequest:
+      type: object
+      properties:
+        feature:
+          type: string
+          minLength: 1
+          title: Feature name
+          description: Feature name
+          pattern: ^[A-Z]
+          maxLength: 255
+      required:
+      - feature
+    FeatureStatusEnum:
+      enum:
+      - HU
+      - PU
+      - H
+      - C
+      - S
+      type: string
+      description: |-
+        * `HU` - Hidden Utility
+        * `PU` - Public Utility
+        * `H` - Helper
+        * `C` - Contextual
+        * `S` - Standalone
+    FindMyCombosResponse:
+      type: object
+      properties:
+        identity:
+          type: string
+        included:
+          type: array
+          items:
+            $ref: '#/components/schemas/Variant'
+        includedByChangingCommanders:
+          type: array
+          items:
+            $ref: '#/components/schemas/Variant'
+        almostIncluded:
+          type: array
+          items:
+            $ref: '#/components/schemas/Variant'
+        almostIncludedByAddingColors:
+          type: array
+          items:
+            $ref: '#/components/schemas/Variant'
+        almostIncludedByChangingCommanders:
+          type: array
+          items:
+            $ref: '#/components/schemas/Variant'
+        almostIncludedByAddingColorsAndChangingCommanders:
+          type: array
+          items:
+            $ref: '#/components/schemas/Variant'
+      required:
+      - almostIncluded
+      - almostIncludedByAddingColors
+      - almostIncludedByAddingColorsAndChangingCommanders
+      - almostIncludedByChangingCommanders
+      - identity
+      - included
+      - includedByChangingCommanders
+    InvalidUrlResponse:
+      type: object
+      properties:
+        detail:
+          type: string
+      required:
+      - detail
+    KindEnum:
+      enum:
+      - NW
+      - SE
+      - II
+      - WC
+      - VG
+      - O
+      type: string
+      description: |-
+        * `NW` - Not Working
+        * `SE` - Spelling Error
+        * `II` - Incorrect Info
+        * `WC` - Wrong Card
+        * `VG` - Variant Grouping
+        * `O` - Other
+    LayoutRotationEnum:
+      enum:
+      - clockwise
+      - counterclockwise
+      - flip
+      type: string
+      description: |-
+        * `clockwise` - Clockwise
+        * `counterclockwise` - Counterclockwise
+        * `flip` - Flip
+    PaginatedCardDetailList:
+      type: object
+      required:
+      - count
+      - next
+      - previous
+      - results
+      properties:
+        count:
+          type: integer
+          example: 123
+          nullable: true
+        next:
+          type: string
+          nullable: true
+          format: uri
+          example: http://api.example.org/accounts/?offset=400&limit=100
+        previous:
+          type: string
+          nullable: true
+          format: uri
+          example: http://api.example.org/accounts/?offset=200&limit=100
+        results:
+          type: array
+          items:
+            $ref: '#/components/schemas/CardDetail'
+    PaginatedFeatureList:
+      type: object
+      required:
+      - count
+      - next
+      - previous
+      - results
+      properties:
+        count:
+          type: integer
+          example: 123
+          nullable: true
+        next:
+          type: string
+          nullable: true
+          format: uri
+          example: http://api.example.org/accounts/?offset=400&limit=100
+        previous:
+          type: string
+          nullable: true
+          format: uri
+          example: http://api.example.org/accounts/?offset=200&limit=100
+        results:
+          type: array
+          items:
+            $ref: '#/components/schemas/Feature'
+    PaginatedFindMyCombosResponseList:
+      type: object
+      required:
+      - count
+      - next
+      - previous
+      - results
+      properties:
+        count:
+          type: integer
+          example: 123
+          nullable: true
+        next:
+          type: string
+          nullable: true
+          format: uri
+          example: http://api.example.org/accounts/?offset=400&limit=100
+        previous:
+          type: string
+          nullable: true
+          format: uri
+          example: http://api.example.org/accounts/?offset=200&limit=100
+        results:
+          type: object
+          properties:
+            identity:
+              type: string
+            included:
+              type: array
+              items:
+                $ref: '#/components/schemas/Variant'
+            includedByChangingCommanders:
+              type: array
+              items:
+                $ref: '#/components/schemas/Variant'
+            almostIncluded:
+              type: array
+              items:
+                $ref: '#/components/schemas/Variant'
+            almostIncludedByAddingColors:
+              type: array
+              items:
+                $ref: '#/components/schemas/Variant'
+            almostIncludedByChangingCommanders:
+              type: array
+              items:
+                $ref: '#/components/schemas/Variant'
+            almostIncludedByAddingColorsAndChangingCommanders:
+              type: array
+              items:
+                $ref: '#/components/schemas/Variant'
+          required:
+          - almostIncluded
+          - almostIncludedByAddingColors
+          - almostIncludedByAddingColorsAndChangingCommanders
+          - almostIncludedByChangingCommanders
+          - identity
+          - included
+          - includedByChangingCommanders
+    PaginatedTemplateList:
+      type: object
+      required:
+      - count
+      - next
+      - previous
+      - results
+      properties:
+        count:
+          type: integer
+          example: 123
+          nullable: true
+        next:
+          type: string
+          nullable: true
+          format: uri
+          example: http://api.example.org/accounts/?offset=400&limit=100
+        previous:
+          type: string
+          nullable: true
+          format: uri
+          example: http://api.example.org/accounts/?offset=200&limit=100
+        results:
+          type: array
+          items:
+            $ref: '#/components/schemas/Template'
+    PaginatedUserDetailList:
+      type: object
+      required:
+      - count
+      - next
+      - previous
+      - results
+      properties:
+        count:
+          type: integer
+          example: 123
+          nullable: true
+        next:
+          type: string
+          nullable: true
+          format: uri
+          example: http://api.example.org/accounts/?offset=400&limit=100
+        previous:
+          type: string
+          nullable: true
+          format: uri
+          example: http://api.example.org/accounts/?offset=200&limit=100
+        results:
+          type: array
+          items:
+            $ref: '#/components/schemas/UserDetail'
+    PaginatedVariantAliasList:
+      type: object
+      required:
+      - count
+      - next
+      - previous
+      - results
+      properties:
+        count:
+          type: integer
+          example: 123
+          nullable: true
+        next:
+          type: string
+          nullable: true
+          format: uri
+          example: http://api.example.org/accounts/?offset=400&limit=100
+        previous:
+          type: string
+          nullable: true
+          format: uri
+          example: http://api.example.org/accounts/?offset=200&limit=100
+        results:
+          type: array
+          items:
+            $ref: '#/components/schemas/VariantAlias'
+    PaginatedVariantList:
+      type: object
+      required:
+      - count
+      - next
+      - previous
+      - results
+      properties:
+        count:
+          type: integer
+          example: 123
+          nullable: true
+        next:
+          type: string
+          nullable: true
+          format: uri
+          example: http://api.example.org/accounts/?offset=400&limit=100
+        previous:
+          type: string
+          nullable: true
+          format: uri
+          example: http://api.example.org/accounts/?offset=200&limit=100
+        results:
+          type: array
+          items:
+            $ref: '#/components/schemas/Variant'
+    PaginatedVariantSuggestionList:
+      type: object
+      required:
+      - count
+      - next
+      - previous
+      - results
+      properties:
+        count:
+          type: integer
+          example: 123
+          nullable: true
+        next:
+          type: string
+          nullable: true
+          format: uri
+          example: http://api.example.org/accounts/?offset=400&limit=100
+        previous:
+          type: string
+          nullable: true
+          format: uri
+          example: http://api.example.org/accounts/?offset=200&limit=100
+        results:
+          type: array
+          items:
+            $ref: '#/components/schemas/VariantSuggestion'
+    PaginatedVariantUpdateSuggestionList:
+      type: object
+      required:
+      - count
+      - next
+      - previous
+      - results
+      properties:
+        count:
+          type: integer
+          example: 123
+          nullable: true
+        next:
+          type: string
+          nullable: true
+          format: uri
+          example: http://api.example.org/accounts/?offset=400&limit=100
+        previous:
+          type: string
+          nullable: true
+          format: uri
+          example: http://api.example.org/accounts/?offset=200&limit=100
+        results:
+          type: array
+          items:
+            $ref: '#/components/schemas/VariantUpdateSuggestion'
+    PaginatedWebsitePropertyList:
+      type: object
+      required:
+      - count
+      - next
+      - previous
+      - results
+      properties:
+        count:
+          type: integer
+          example: 123
+          nullable: true
+        next:
+          type: string
+          nullable: true
+          format: uri
+          example: http://api.example.org/accounts/?offset=400&limit=100
+        previous:
+          type: string
+          nullable: true
+          format: uri
+          example: http://api.example.org/accounts/?offset=200&limit=100
+        results:
+          type: array
+          items:
+            $ref: '#/components/schemas/WebsiteProperty'
+    PatchedUserDetailRequest:
+      type: object
+      properties:
+        password:
+          type: string
+          writeOnly: true
+          minLength: 1
+          maxLength: 128
+        firstName:
+          type: string
+          maxLength: 150
+        lastName:
+          type: string
+          maxLength: 150
+    PatchedVariantSuggestionRequest:
+      type: object
+      properties:
+        uses:
+          type: array
+          items:
+            $ref: '#/components/schemas/CardUsedInVariantSuggestionRequest'
+        requires:
+          type: array
+          items:
+            $ref: '#/components/schemas/TemplateRequiredInVariantSuggestionRequest'
+        produces:
+          type: array
+          items:
+            $ref: '#/components/schemas/FeatureProducedInVariantSuggestionRequest'
+        variantOf:
+          type: string
+          minLength: 1
+          description: If this suggestion is a variant of an existing one, link it
+            here.
+          nullable: true
+        manaNeeded:
+          type: string
+          description: Mana needed for this combo. Use the {1}{W}{U}{B}{R}{G}{B/P}...
+            format.
+          pattern: ^(?:(?:\{(?:C\/[WUBRG]|[WUBRG](?:\/P)?|[0-9CPXYZS\u221e]|[1-9][0-9]{1,2}|(?:2\/[WUBRG]|W\/U|W\/B|U\/B|U\/R|B\/R|B\/G|R\/G|R\/W|G\/W|G\/U)(?:\/P)?)\})[^\{\}]*)*$
+          maxLength: 512
+        easyPrerequisites:
+          type: string
+          description: Easily achievable prerequisites for this combo.
+          pattern: ^(?:[^\[]*(?:\[(?!\[)|\[{2}[^\[]+\]{2}|\[{3,}))*[^\[]*$
+        notablePrerequisites:
+          type: string
+          description: Notable prerequisites for this combo.
+          pattern: ^(?:[^\[]*(?:\[(?!\[)|\[{2}[^\[]+\]{2}|\[{3,}))*[^\[]*$
+        description:
+          type: string
+          minLength: 1
+          description: Long description, in steps
+          pattern: ^(?:[^\[]*(?:\[(?!\[)|\[{2}[^\[]+\]{2}|\[{3,}))*[^\[]*$
+        spoiler:
+          type: boolean
+          title: Is spoiler
+          description: Is this combo a spoiler?
+        comment:
+          type: string
+          description: Comment written by the user that suggested this
+          pattern: ^(?:[^\[]*(?:\[(?!\[)|\[{2}[^\[]+\]{2}|\[{3,}))*[^\[]*$
+          maxLength: 1024
+    PatchedVariantUpdateSuggestionRequest:
+      type: object
+      properties:
+        kind:
+          allOf:
+          - $ref: '#/components/schemas/KindEnum'
+          description: |-
+            Type of suggestion
+
+            * `NW` - Not Working
+            * `SE` - Spelling Error
+            * `II` - Incorrect Info
+            * `WC` - Wrong Card
+            * `VG` - Variant Grouping
+            * `O` - Other
+        variants:
+          type: array
+          items:
+            $ref: '#/components/schemas/VariantInVariantUpdateSuggestionRequest'
+        issue:
+          type: string
+          minLength: 1
+          description: Description of the problem
+          pattern: ^(?:[^\[]*(?:\[(?!\[)|\[{2}[^\[]+\]{2}|\[{3,}))*[^\[]*$
+        solution:
+          type: string
+          description: Description of the solution
+          pattern: ^(?:[^\[]*(?:\[(?!\[)|\[{2}[^\[]+\]{2}|\[{3,}))*[^\[]*$
+        comment:
+          type: string
+          description: Comment written by the user that suggested this
+          pattern: ^(?:[^\[]*(?:\[(?!\[)|\[{2}[^\[]+\]{2}|\[{3,}))*[^\[]*$
+          maxLength: 1024
+    SuggestionStatusEnum:
+      enum:
+      - N
+      - AD
+      - PA
+      - A
+      - R
+      type: string
+      description: |-
+        * `N` - New
+        * `AD` - Awaiting Discussion
+        * `PA` - Pending Approval
+        * `A` - Accepted
+        * `R` - Rejected
+    Template:
+      type: object
+      properties:
+        id:
+          type: integer
+          readOnly: true
+        name:
+          type: string
+          title: Template name
+          description: short description of the template in natural language
+          pattern: ^[A-Z]
+          maxLength: 255
+        scryfallQuery:
+          type: string
+          nullable: true
+          description: |
+            Variables supported: mv, manavalue, power, pow, toughness, tou, pt, powtou, loyalty, loy, c, color, id, identity, produces, has, t, type, keyword, kw, is, o, oracle, function, otag, oracletag, oracleid, m, mana, devotion.
+            Operators supported: =, !=, <, >, <=, >=, :.
+            You can compose a "and"/"or" expression made of "and"/"or" expressions, like "(c:W or c:U) and (t:creature or t:artifact)".
+            You can also omit parentheses when not necessary, like "(c:W or c:U) t:creature".
+            Card names are only supported if wrapped in double quotes and preceded by an exclamation mark (!) in order to match the exact name, like !"Lightning Bolt".
+            You can negate any expression by prepending a dash (-), like "-t:creature".
+            More info at: https://scryfall.com/docs/syntax.
+          maxLength: 1024
+        scryfallApi:
+          type: string
+          readOnly: true
+          nullable: true
+      required:
+      - id
+      - name
+      - scryfallApi
+      - scryfallQuery
+    TemplateInVariant:
+      type: object
+      properties:
+        template:
+          allOf:
+          - $ref: '#/components/schemas/Template'
+          readOnly: true
+        zoneLocations:
+          type: array
+          items:
+            type: string
+          readOnly: true
+        battlefieldCardState:
+          type: string
+          readOnly: true
+        exileCardState:
+          type: string
+          readOnly: true
+        libraryCardState:
+          type: string
+          readOnly: true
+        graveyardCardState:
+          type: string
+          readOnly: true
+        mustBeCommander:
+          type: boolean
+          readOnly: true
+        quantity:
+          type: integer
+          maximum: 32767
+          minimum: 1
+          description: Quantity of the card in the combo.
+      required:
+      - battlefieldCardState
+      - exileCardState
+      - graveyardCardState
+      - libraryCardState
+      - mustBeCommander
+      - quantity
+      - template
+      - zoneLocations
+    TemplateRequiredInVariantSuggestion:
+      type: object
+      properties:
+        template:
+          type: string
+          title: Template name
+          description: Template name
+          pattern: ^[A-Z]
+          maxLength: 255
+        quantity:
+          type: integer
+          maximum: 32767
+          minimum: 1
+          description: Quantity of the card in the combo.
+        scryfallQuery:
+          type: string
+          nullable: true
+          description: |
+            Variables supported: mv, manavalue, power, pow, toughness, tou, pt, powtou, loyalty, loy, c, color, id, identity, produces, has, t, type, keyword, kw, is, o, oracle, function, otag, oracletag, oracleid, m, mana, devotion.
+            Operators supported: =, !=, <, >, <=, >=, :.
+            You can compose a "and"/"or" expression made of "and"/"or" expressions, like "(c:W or c:U) and (t:creature or t:artifact)".
+            You can also omit parentheses when not necessary, like "(c:W or c:U) t:creature".
+            Card names are only supported if wrapped in double quotes and preceded by an exclamation mark (!) in order to match the exact name, like !"Lightning Bolt".
+            You can negate any expression by prepending a dash (-), like "-t:creature".
+            More info at: https://scryfall.com/docs/syntax.
+          maxLength: 1024
+        zoneLocations:
+          type: array
+          items:
+            $ref: '#/components/schemas/ZoneLocationsEnum'
+        battlefieldCardState:
+          type: string
+          title: Battlefield starting card state
+          description: State of the card on the battlefield, if present.
+          pattern: ^(?:[^\[]*(?:\[(?!\[)|\[{2}[^\[]+\]{2}|\[{3,}))*[^\[]*$
+          maxLength: 512
+        exileCardState:
+          type: string
+          title: Exile starting card state
+          description: State of the card in exile, if present.
+          pattern: ^(?:[^\[]*(?:\[(?!\[)|\[{2}[^\[]+\]{2}|\[{3,}))*[^\[]*$
+          maxLength: 512
+        libraryCardState:
+          type: string
+          title: Library starting card state
+          description: State of the card in the library, if present.
+          pattern: ^(?:[^\[]*(?:\[(?!\[)|\[{2}[^\[]+\]{2}|\[{3,}))*[^\[]*$
+          maxLength: 512
+        graveyardCardState:
+          type: string
+          title: Graveyard starting card state
+          description: State of the card in the graveyard, if present.
+          pattern: ^(?:[^\[]*(?:\[(?!\[)|\[{2}[^\[]+\]{2}|\[{3,}))*[^\[]*$
+          maxLength: 512
+        mustBeCommander:
+          type: boolean
+          description: Does the card have to be a commander?
+      required:
+      - battlefieldCardState
+      - exileCardState
+      - graveyardCardState
+      - libraryCardState
+      - mustBeCommander
+      - quantity
+      - scryfallQuery
+      - template
+      - zoneLocations
+    TemplateRequiredInVariantSuggestionRequest:
+      type: object
+      properties:
+        template:
+          type: string
+          minLength: 1
+          title: Template name
+          description: Template name
+          pattern: ^[A-Z]
+          maxLength: 255
+        quantity:
+          type: integer
+          maximum: 32767
+          minimum: 1
+          description: Quantity of the card in the combo.
+        scryfallQuery:
+          type: string
+          nullable: true
+          description: |
+            Variables supported: mv, manavalue, power, pow, toughness, tou, pt, powtou, loyalty, loy, c, color, id, identity, produces, has, t, type, keyword, kw, is, o, oracle, function, otag, oracletag, oracleid, m, mana, devotion.
+            Operators supported: =, !=, <, >, <=, >=, :.
+            You can compose a "and"/"or" expression made of "and"/"or" expressions, like "(c:W or c:U) and (t:creature or t:artifact)".
+            You can also omit parentheses when not necessary, like "(c:W or c:U) t:creature".
+            Card names are only supported if wrapped in double quotes and preceded by an exclamation mark (!) in order to match the exact name, like !"Lightning Bolt".
+            You can negate any expression by prepending a dash (-), like "-t:creature".
+            More info at: https://scryfall.com/docs/syntax.
+          maxLength: 1024
+        zoneLocations:
+          type: array
+          items:
+            $ref: '#/components/schemas/ZoneLocationsEnum'
+        battlefieldCardState:
+          type: string
+          title: Battlefield starting card state
+          description: State of the card on the battlefield, if present.
+          pattern: ^(?:[^\[]*(?:\[(?!\[)|\[{2}[^\[]+\]{2}|\[{3,}))*[^\[]*$
+          maxLength: 512
+        exileCardState:
+          type: string
+          title: Exile starting card state
+          description: State of the card in exile, if present.
+          pattern: ^(?:[^\[]*(?:\[(?!\[)|\[{2}[^\[]+\]{2}|\[{3,}))*[^\[]*$
+          maxLength: 512
+        libraryCardState:
+          type: string
+          title: Library starting card state
+          description: State of the card in the library, if present.
+          pattern: ^(?:[^\[]*(?:\[(?!\[)|\[{2}[^\[]+\]{2}|\[{3,}))*[^\[]*$
+          maxLength: 512
+        graveyardCardState:
+          type: string
+          title: Graveyard starting card state
+          description: State of the card in the graveyard, if present.
+          pattern: ^(?:[^\[]*(?:\[(?!\[)|\[{2}[^\[]+\]{2}|\[{3,}))*[^\[]*$
+          maxLength: 512
+        mustBeCommander:
+          type: boolean
+          description: Does the card have to be a commander?
+      required:
+      - template
+      - zoneLocations
+    TokenObtainPair:
+      type: object
+      properties:
+        refresh:
+          type: string
+          readOnly: true
+        access:
+          type: string
+          readOnly: true
+      required:
+      - access
+      - refresh
+    TokenObtainPairRequest:
+      type: object
+      properties:
+        username:
+          type: string
+          writeOnly: true
+          minLength: 1
+        password:
+          type: string
+          writeOnly: true
+          minLength: 1
+        code:
+          type: string
+          writeOnly: true
+          minLength: 1
+    TokenRefresh:
+      type: object
+      properties:
+        access:
+          type: string
+          readOnly: true
+      required:
+      - access
+    TokenRefreshRequest:
+      type: object
+      properties:
+        refresh:
+          type: string
+          writeOnly: true
+          minLength: 1
+      required:
+      - refresh
+    TokenVerifyRequest:
+      type: object
+      properties:
+        token:
+          type: string
+          writeOnly: true
+          minLength: 1
+      required:
+      - token
+    User:
+      type: object
+      properties:
+        id:
+          type: integer
+          readOnly: true
+        username:
+          type: string
+          description: Required. 150 characters or fewer. Letters, digits and @/./+/-/_
+            only.
+          pattern: ^[\w.@+-]+$
+          maxLength: 150
+      required:
+      - id
+      - username
+    UserDetail:
+      type: object
+      properties:
+        id:
+          type: integer
+          readOnly: true
+        username:
+          type: string
+          readOnly: true
+          description: Required. 150 characters or fewer. Letters, digits and @/./+/-/_
+            only.
+        email:
+          type: string
+          format: email
+          readOnly: true
+          title: Email address
+        isStaff:
+          type: boolean
+          readOnly: true
+          title: Staff status
+          description: Designates whether the user can log into this admin site.
+        isActive:
+          type: boolean
+          readOnly: true
+          title: Active
+          description: Designates whether this user should be treated as active. Unselect
+            this instead of deleting accounts.
+        firstName:
+          type: string
+          maxLength: 150
+        lastName:
+          type: string
+          maxLength: 150
+      required:
+      - email
+      - firstName
+      - id
+      - isActive
+      - isStaff
+      - lastName
+      - username
+    UserDetailRequest:
+      type: object
+      properties:
+        password:
+          type: string
+          writeOnly: true
+          minLength: 1
+          maxLength: 128
+        firstName:
+          type: string
+          maxLength: 150
+        lastName:
+          type: string
+          maxLength: 150
+      required:
+      - password
+    UserRequest:
+      type: object
+      properties:
+        username:
+          type: string
+          minLength: 1
+          description: Required. 150 characters or fewer. Letters, digits and @/./+/-/_
+            only.
+          pattern: ^[\w.@+-]+$
+          maxLength: 150
+      required:
+      - username
+    Variant:
+      type: object
+      properties:
+        id:
+          type: string
+          description: Unique ID for this variant
+          maxLength: 128
+        status:
+          allOf:
+          - $ref: '#/components/schemas/VariantStatusEnum'
+          description: |-
+            Variant status for editors
+
+            * `N` - New
+            * `D` - Draft
+            * `NR` - Needs Review
+            * `OK` - Ok
+            * `E` - Example
+            * `R` - Restore
+            * `NW` - Not Working
+        uses:
+          type: array
+          items:
+            $ref: '#/components/schemas/CardInVariant'
+          readOnly: true
+        requires:
+          type: array
+          items:
+            $ref: '#/components/schemas/TemplateInVariant'
+          readOnly: true
+        produces:
+          type: array
+          items:
+            $ref: '#/components/schemas/FeatureProducedByVariant'
+          readOnly: true
+        of:
+          type: array
+          items:
+            $ref: '#/components/schemas/Combo'
+          readOnly: true
+        includes:
+          type: array
+          items:
+            $ref: '#/components/schemas/Combo'
+          readOnly: true
+        identity:
+          allOf:
+          - $ref: '#/components/schemas/ColorEnum'
+          title: Color identity
+        manaNeeded:
+          type: string
+          readOnly: true
+        manaValueNeeded:
+          type: integer
+          minimum: 0
+          readOnly: true
+        easyPrerequisites:
+          type: string
+          readOnly: true
+        notablePrerequisites:
+          type: string
+          readOnly: true
+        description:
+          type: string
+          readOnly: true
+        notes:
+          type: string
+          readOnly: true
+        popularity:
+          type: integer
+          minimum: 0
+          readOnly: true
+          nullable: true
+        spoiler:
+          type: boolean
+          title: Is spoiler
+          description: Is this from an upcoming set?
+        bracketTag:
+          $ref: '#/components/schemas/BracketTagEnum'
+        legalities:
+          allOf:
+          - $ref: '#/components/schemas/VariantLegalities'
+          readOnly: true
+        prices:
+          allOf:
+          - $ref: '#/components/schemas/VariantPrices'
+          readOnly: true
+        variantCount:
+          type: integer
+          readOnly: true
+          description: Number of variants generated by the same generator combos
+      required:
+      - bracketTag
+      - description
+      - easyPrerequisites
+      - id
+      - identity
+      - includes
+      - legalities
+      - manaNeeded
+      - manaValueNeeded
+      - notablePrerequisites
+      - notes
+      - of
+      - popularity
+      - prices
+      - produces
+      - requires
+      - spoiler
+      - status
+      - uses
+      - variantCount
+    VariantAlias:
+      type: object
+      properties:
+        id:
+          type: string
+          description: Unique id of this variant alias
+          maxLength: 128
+        variant:
+          type: string
+          description: Variant this alias redirects to
+          nullable: true
+          title: Redirects to
+      required:
+      - id
+      - variant
+    VariantInVariantUpdateSuggestion:
+      type: object
+      properties:
+        variant:
+          type: string
+          description: Unique ID for this variant
+        issue:
+          type: string
+          description: Description of the issue specific for this variant
+          pattern: ^(?:[^\[]*(?:\[(?!\[)|\[{2}[^\[]+\]{2}|\[{3,}))*[^\[]*$
+      required:
+      - issue
+      - variant
+    VariantInVariantUpdateSuggestionRequest:
+      type: object
+      properties:
+        variant:
+          type: string
+          minLength: 1
+          description: Unique ID for this variant
+        issue:
+          type: string
+          description: Description of the issue specific for this variant
+          pattern: ^(?:[^\[]*(?:\[(?!\[)|\[{2}[^\[]+\]{2}|\[{3,}))*[^\[]*$
+      required:
+      - variant
+    VariantLegalities:
+      type: object
+      properties:
+        commander:
+          type: boolean
+        pauperCommanderMain:
+          type: boolean
+        pauperCommander:
+          type: boolean
+        oathbreaker:
+          type: boolean
+        predh:
+          type: boolean
+        brawl:
+          type: boolean
+        vintage:
+          type: boolean
+        legacy:
+          type: boolean
+        premodern:
+          type: boolean
+        modern:
+          type: boolean
+        pioneer:
+          type: boolean
+        standard:
+          type: boolean
+        pauper:
+          type: boolean
+      required:
+      - brawl
+      - commander
+      - legacy
+      - modern
+      - oathbreaker
+      - pauper
+      - pauperCommander
+      - pauperCommanderMain
+      - pioneer
+      - predh
+      - premodern
+      - standard
+      - vintage
+    VariantPrices:
+      type: object
+      properties:
+        tcgplayer:
+          type: string
+          format: decimal
+          pattern: ^-?\d{0,8}(?:\.\d{0,2})?$
+        cardkingdom:
+          type: string
+          format: decimal
+          pattern: ^-?\d{0,8}(?:\.\d{0,2})?$
+        cardmarket:
+          type: string
+          format: decimal
+          pattern: ^-?\d{0,8}(?:\.\d{0,2})?$
+      required:
+      - cardkingdom
+      - cardmarket
+      - tcgplayer
+    VariantStatusEnum:
+      enum:
+      - N
+      - D
+      - NR
+      - OK
+      - E
+      - R
+      - NW
+      type: string
+      description: |-
+        * `N` - New
+        * `D` - Draft
+        * `NR` - Needs Review
+        * `OK` - Ok
+        * `E` - Example
+        * `R` - Restore
+        * `NW` - Not Working
+    VariantSuggestion:
+      type: object
+      properties:
+        id:
+          type: integer
+          readOnly: true
+        status:
+          allOf:
+          - $ref: '#/components/schemas/SuggestionStatusEnum'
+          readOnly: true
+          description: |-
+            Suggestion status for editors
+
+            * `N` - New
+            * `AD` - Awaiting Discussion
+            * `PA` - Pending Approval
+            * `A` - Accepted
+            * `R` - Rejected
+        uses:
+          type: array
+          items:
+            $ref: '#/components/schemas/CardUsedInVariantSuggestion'
+        requires:
+          type: array
+          items:
+            $ref: '#/components/schemas/TemplateRequiredInVariantSuggestion'
+        produces:
+          type: array
+          items:
+            $ref: '#/components/schemas/FeatureProducedInVariantSuggestion'
+        variantOf:
+          type: string
+          description: If this suggestion is a variant of an existing one, link it
+            here.
+          nullable: true
+        manaNeeded:
+          type: string
+          description: Mana needed for this combo. Use the {1}{W}{U}{B}{R}{G}{B/P}...
+            format.
+          pattern: ^(?:(?:\{(?:C\/[WUBRG]|[WUBRG](?:\/P)?|[0-9CPXYZS\u221e]|[1-9][0-9]{1,2}|(?:2\/[WUBRG]|W\/U|W\/B|U\/B|U\/R|B\/R|B\/G|R\/G|R\/W|G\/W|G\/U)(?:\/P)?)\})[^\{\}]*)*$
+          maxLength: 512
+        easyPrerequisites:
+          type: string
+          description: Easily achievable prerequisites for this combo.
+          pattern: ^(?:[^\[]*(?:\[(?!\[)|\[{2}[^\[]+\]{2}|\[{3,}))*[^\[]*$
+        notablePrerequisites:
+          type: string
+          description: Notable prerequisites for this combo.
+          pattern: ^(?:[^\[]*(?:\[(?!\[)|\[{2}[^\[]+\]{2}|\[{3,}))*[^\[]*$
+        description:
+          type: string
+          description: Long description, in steps
+          pattern: ^(?:[^\[]*(?:\[(?!\[)|\[{2}[^\[]+\]{2}|\[{3,}))*[^\[]*$
+        spoiler:
+          type: boolean
+          title: Is spoiler
+          description: Is this combo a spoiler?
+        comment:
+          type: string
+          description: Comment written by the user that suggested this
+          pattern: ^(?:[^\[]*(?:\[(?!\[)|\[{2}[^\[]+\]{2}|\[{3,}))*[^\[]*$
+          maxLength: 1024
+        suggestedBy:
+          allOf:
+          - $ref: '#/components/schemas/User'
+          readOnly: true
+        created:
+          type: string
+          format: date-time
+          readOnly: true
+      required:
+      - comment
+      - created
+      - description
+      - easyPrerequisites
+      - id
+      - manaNeeded
+      - notablePrerequisites
+      - produces
+      - requires
+      - spoiler
+      - status
+      - suggestedBy
+      - uses
+      - variantOf
+    VariantSuggestionRequest:
+      type: object
+      properties:
+        uses:
+          type: array
+          items:
+            $ref: '#/components/schemas/CardUsedInVariantSuggestionRequest'
+        requires:
+          type: array
+          items:
+            $ref: '#/components/schemas/TemplateRequiredInVariantSuggestionRequest'
+        produces:
+          type: array
+          items:
+            $ref: '#/components/schemas/FeatureProducedInVariantSuggestionRequest'
+        variantOf:
+          type: string
+          minLength: 1
+          description: If this suggestion is a variant of an existing one, link it
+            here.
+          nullable: true
+        manaNeeded:
+          type: string
+          description: Mana needed for this combo. Use the {1}{W}{U}{B}{R}{G}{B/P}...
+            format.
+          pattern: ^(?:(?:\{(?:C\/[WUBRG]|[WUBRG](?:\/P)?|[0-9CPXYZS\u221e]|[1-9][0-9]{1,2}|(?:2\/[WUBRG]|W\/U|W\/B|U\/B|U\/R|B\/R|B\/G|R\/G|R\/W|G\/W|G\/U)(?:\/P)?)\})[^\{\}]*)*$
+          maxLength: 512
+        easyPrerequisites:
+          type: string
+          description: Easily achievable prerequisites for this combo.
+          pattern: ^(?:[^\[]*(?:\[(?!\[)|\[{2}[^\[]+\]{2}|\[{3,}))*[^\[]*$
+        notablePrerequisites:
+          type: string
+          description: Notable prerequisites for this combo.
+          pattern: ^(?:[^\[]*(?:\[(?!\[)|\[{2}[^\[]+\]{2}|\[{3,}))*[^\[]*$
+        description:
+          type: string
+          minLength: 1
+          description: Long description, in steps
+          pattern: ^(?:[^\[]*(?:\[(?!\[)|\[{2}[^\[]+\]{2}|\[{3,}))*[^\[]*$
+        spoiler:
+          type: boolean
+          title: Is spoiler
+          description: Is this combo a spoiler?
+        comment:
+          type: string
+          description: Comment written by the user that suggested this
+          pattern: ^(?:[^\[]*(?:\[(?!\[)|\[{2}[^\[]+\]{2}|\[{3,}))*[^\[]*$
+          maxLength: 1024
+      required:
+      - description
+      - produces
+      - requires
+      - uses
+    VariantUpdateSuggestion:
+      type: object
+      properties:
+        id:
+          type: integer
+          readOnly: true
+        status:
+          allOf:
+          - $ref: '#/components/schemas/SuggestionStatusEnum'
+          readOnly: true
+          description: |-
+            Suggestion status for editors
+
+            * `N` - New
+            * `AD` - Awaiting Discussion
+            * `PA` - Pending Approval
+            * `A` - Accepted
+            * `R` - Rejected
+        kind:
+          allOf:
+          - $ref: '#/components/schemas/KindEnum'
+          description: |-
+            Type of suggestion
+
+            * `NW` - Not Working
+            * `SE` - Spelling Error
+            * `II` - Incorrect Info
+            * `WC` - Wrong Card
+            * `VG` - Variant Grouping
+            * `O` - Other
+        variants:
+          type: array
+          items:
+            $ref: '#/components/schemas/VariantInVariantUpdateSuggestion'
+        issue:
+          type: string
+          description: Description of the problem
+          pattern: ^(?:[^\[]*(?:\[(?!\[)|\[{2}[^\[]+\]{2}|\[{3,}))*[^\[]*$
+        solution:
+          type: string
+          description: Description of the solution
+          pattern: ^(?:[^\[]*(?:\[(?!\[)|\[{2}[^\[]+\]{2}|\[{3,}))*[^\[]*$
+        comment:
+          type: string
+          description: Comment written by the user that suggested this
+          pattern: ^(?:[^\[]*(?:\[(?!\[)|\[{2}[^\[]+\]{2}|\[{3,}))*[^\[]*$
+          maxLength: 1024
+        suggestedBy:
+          allOf:
+          - $ref: '#/components/schemas/User'
+          readOnly: true
+        created:
+          type: string
+          format: date-time
+          readOnly: true
+      required:
+      - comment
+      - created
+      - id
+      - issue
+      - kind
+      - solution
+      - status
+      - suggestedBy
+      - variants
+    VariantUpdateSuggestionRequest:
+      type: object
+      properties:
+        kind:
+          allOf:
+          - $ref: '#/components/schemas/KindEnum'
+          description: |-
+            Type of suggestion
+
+            * `NW` - Not Working
+            * `SE` - Spelling Error
+            * `II` - Incorrect Info
+            * `WC` - Wrong Card
+            * `VG` - Variant Grouping
+            * `O` - Other
+        variants:
+          type: array
+          items:
+            $ref: '#/components/schemas/VariantInVariantUpdateSuggestionRequest'
+        issue:
+          type: string
+          minLength: 1
+          description: Description of the problem
+          pattern: ^(?:[^\[]*(?:\[(?!\[)|\[{2}[^\[]+\]{2}|\[{3,}))*[^\[]*$
+        solution:
+          type: string
+          description: Description of the solution
+          pattern: ^(?:[^\[]*(?:\[(?!\[)|\[{2}[^\[]+\]{2}|\[{3,}))*[^\[]*$
+        comment:
+          type: string
+          description: Comment written by the user that suggested this
+          pattern: ^(?:[^\[]*(?:\[(?!\[)|\[{2}[^\[]+\]{2}|\[{3,}))*[^\[]*$
+          maxLength: 1024
+      required:
+      - issue
+      - kind
+    VariantsQueryValidationError:
+      type: object
+      properties:
+        q:
+          type: array
+          items:
+            type: string
+      required:
+      - q
+    WebsiteProperty:
+      type: object
+      properties:
+        key:
+          type: string
+          readOnly: true
+        value:
+          type: string
+          description: Comma-separated list of values
+          pattern: ^[^\,]+(?:\,[^\,]+)*$
+          maxLength: 1000
+      required:
+      - key
+      - value
+    ZoneLocationsEnum:
+      enum:
+      - H
+      - B
+      - C
+      - E
+      - G
+      - L
+      type: string
+      description: |-
+        * `H` - Hand
+        * `B` - Battlefield
+        * `C` - Command Zone
+        * `E` - Exile
+        * `G` - Graveyard
+        * `L` - Library
+  securitySchemes:
+    basicAuth:
+      type: http
+      scheme: basic
+    cookieAuth:
+      type: apiKey
+      in: cookie
+      name: sessionid
+    jwtAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
