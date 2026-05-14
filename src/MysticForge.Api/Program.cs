@@ -64,6 +64,7 @@ if (app.Environment.IsDevelopment())
     });
 
     app.MapTaggingDevEndpoints();
+    app.MapSpellbookDevEndpoints();
 }
 
 app.MapTaggingAdminEndpoints();
